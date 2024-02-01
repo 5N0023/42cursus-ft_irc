@@ -64,7 +64,7 @@ int main() {
         std::cout << "Received " << buffer << " bytes." << std::endl;
 
     }
-
+ 
     // Ideally, we would never reach here in a continuous server
     close(server_fd); // Close the server file descriptor
 
