@@ -41,11 +41,8 @@ class server
             private:
                 std::string message;
             public:
-                serverException(std::string message){this->message = message;}
+                serverException(std::string message);
                 ~serverException();
-                std::string what()
-                {
-                    return message.c_str();
-                }
+                std::string what();
         };
 };

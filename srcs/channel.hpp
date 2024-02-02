@@ -23,24 +23,21 @@ class channel
         void setName(std::string name);
         std::string getName();
         void addMember(user member);
-        void removeMember(user member);
-        void addOperator(user op);
-        void removeOperator(user op);
+        // void removeMember(user member);
+        // void addOperator(user op);
+        // void removeOperator(user op);
         void setPassword(std::string password);
         std::string getPassword();
-        void setTopic(std::string topic);
-        std::string getTopic();
+        // void setTopic(std::string topic);
+        // std::string getTopic();
         std::vector<user> getMembers();
         class channelException : public std::exception
         {
             private:
                 std::string message;
             public:
-                channelException(std::string message){this->message = message;}
+                channelException(std::string message);
                 ~channelException();
-                std::string what()
-                {
-                    return message.c_str();
-                }
+                std::string what();
         };
 };

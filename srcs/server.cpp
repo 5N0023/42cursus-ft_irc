@@ -98,7 +98,7 @@ void server::run()
                         {
                             std::string nick = std::string(buffer + 5, bytesRead - 5);
                             try {
-                            this->addUser(user("test", nick, clientIPs[fds[i].fd], fds[i].fd, this->getUsers()));
+                            this->addUser(user("test", "test", clientIPs[fds[i].fd], fds[i].fd, this->getUsers()));
                             }
                             catch (user::userException &e)
                             {
@@ -141,6 +141,7 @@ void server::addUser(user newUser)
             throw serverException("Username already in use");
         }
     }
+    std::cout << "useradded :" << newUser.getNick() << " " << newUser.getUserName() << " " << newUser.getIpAddress() << " " << newUser.getSocket() << std::endl;
     users.push_back(newUser);
     std::string reply = RPL_WELCOME(newUser.getNick(), newUser.getIpAddress());
     send(newUser.getSocket(), reply.c_str(), reply.size(), 0);
@@ -163,6 +164,7 @@ void server::removeUser(user user)
 
 void server::addChannel(channel newChannel, user user)
 {
+    std::cout << "newChannel.getName() = " << newChannel.getName() << std::endl;
     int channelsSize = channels.size();
     for (int i = 0; i < channelsSize; i++)
     {
@@ -174,6 +176,9 @@ void server::addChannel(channel newChannel, user user)
         }
     }
     channels.push_back(newChannel);
+    std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
+    send(user.getSocket(), reply.c_str(), reply.size(), 0);
+
 }
 
 user server::getUserBySocket(int socket)
@@ -181,14 +186,39 @@ user server::getUserBySocket(int socket)
     int usersSize = users.size();
     for (int i = 0; i < usersSize; i++)
     {
+        std::cout << "users[i].getSocket() = " << users[i].getSocket() << " socket = " << socket << std::endl;
         if (users[i].getSocket() == socket)
         {
             return users[i];
         }
     }
-    throw serverException("User not found");
+    throw serverException("User not found in getUserBySocket");
 }
 
+
+std::vector<user> server::getUsers()
+{
+    return users;
+}
+
+std::vector<channel> server::getChannels()
+{
+    return channels;
+}
+
+server::serverException::~serverException()
+{
+}
+
+server::serverException::serverException(std::string message)
+{
+    this->message = message;
+}
+
+std::string server::serverException::what()
+{
+    return message.c_str();
+}
 
 // int main() {
 //     int listeningSocket = socket(AF_INET, SOCK_STREAM, 0);
