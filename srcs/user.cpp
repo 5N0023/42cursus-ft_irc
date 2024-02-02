@@ -1,8 +1,8 @@
 #include "user.hpp"
 
-user::user(std::string userName, std::string nick, std::string ipAddress, int socket, std::vector<user> users)
+user::user(std::string nick, std::string ipAddress, int socket, std::vector<user> users)
 {
-    this->userName = userName;
+    this->registered = false;
     this->nick = nick;
     this->ipAddress = ipAddress;
     this->socket = socket;
@@ -11,7 +11,7 @@ user::user(std::string userName, std::string nick, std::string ipAddress, int so
     {
         if (users[i].getUserName() == userName)
         {
-            throw userException("Username already in use");
+            throw userException("User already exists");
         }
     }
 }
@@ -39,4 +39,33 @@ std::string user::getIpAddress()
 int user::getSocket()
 {
     return socket;
+}
+
+const char *user::userException::what(void) const throw()
+{
+    return message.c_str();
+}
+
+user::userException::userException(std::string message)
+{
+    this->message = message;
+}
+
+user::userException::~userException() throw()
+{
+}
+
+void user::setUserName(std::string userName, std::vector<user> users)
+{
+    int usersSize = users.size();
+    for (int i = 0; i < usersSize; i++)
+    {
+        if (users[i].getUserName() == userName)
+        {
+            throw userException("User already exists");
+        }
+    }
+    this->userName = userName;
+    this->registered = true;
+    std::cout << "Username changed to " << userName << std::endl;
 }

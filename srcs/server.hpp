@@ -35,14 +35,15 @@ class server
         void removeChannel(channel channel);
         std::vector<user> getUsers();
         std::vector<channel> getChannels();
-        user getUserBySocket(int socket);
+        user &getUserBySocket(int socket);
         class serverException : public std::exception
         {
             private:
                 std::string message;
             public:
                 serverException(std::string message);
-                ~serverException();
-                std::string what();
+                const char *what(void) const throw();
+                ~serverException() throw();
+
         };
 };

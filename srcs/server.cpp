@@ -5,12 +5,12 @@ server::server(int port, std::string password): port(port), password(password)
     listeningSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listeningSocket < 0)
     {
-        throw serverException("Error creating socket");
+        throw serverException("Error creating socket\n");
     }
     int opt = 1;
     if (setsockopt(listeningSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
-        throw serverException("Error setting socket options");
+        throw serverException("Error setting socket options\n");
     }
 
     struct sockaddr_in serverAddr;
@@ -20,13 +20,13 @@ server::server(int port, std::string password): port(port), password(password)
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     if (bind(listeningSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
     {
-        throw serverException("Error binding socket");
+        throw serverException("Error binding socket\n");
     }
 
     // Listen on socket
     if (listen(listeningSocket, 1024) < 0)
     {
-        throw serverException("Error listening on socket");
+        throw serverException("Error listening on socket\n");
     }
 }
 
@@ -51,7 +51,7 @@ void server::run()
         int ret = poll(fds.data(), fds.size(), -1); // -1 means wait indefinitely
         if (ret < 0)
         {
-            throw serverException("Error on poll()");
+            throw serverException("Error on poll()\n");
         }
 
         for (size_t i = 0; i < fds.size(); ++i)
@@ -66,7 +66,7 @@ void server::run()
                     int clientSocket = accept(listeningSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
                     if (clientSocket < 0)
                     {
-                        throw serverException("Error accepting connection");
+                        throw serverException("Error accepting connection\n");
                     }
 
                     // Store client IP address
@@ -98,7 +98,18 @@ void server::run()
                         {
                             std::string nick = std::string(buffer + 5, bytesRead - 5);
                             try {
-                            this->addUser(user("test", "test", clientIPs[fds[i].fd], fds[i].fd, this->getUsers()));
+                            this->addUser(user(nick, clientIPs[fds[i].fd], fds[i].fd, this->getUsers()));
+                            }
+                            catch (user::userException &e)
+                            {
+                                std::cerr << "Error: " << e.what() << "\n";
+                            }
+                        }
+                        if (memcmp(buffer, "USER", 4) == 0)
+                        {
+                            std::string userName = std::string(buffer + 5, bytesRead - 5);
+                            try {
+                                this->getUserBySocket(fds[i].fd).setUserName(userName, this->getUsers());
                             }
                             catch (user::userException &e)
                             {
@@ -138,7 +149,7 @@ void server::addUser(user newUser)
     {
         if (users[i].getUserName() == newUser.getUserName())
         {
-            throw serverException("Username already in use");
+            throw serverException("User already exists");
         }
     }
     std::cout << "useradded :" << newUser.getNick() << " " << newUser.getUserName() << " " << newUser.getIpAddress() << " " << newUser.getSocket() << std::endl;
@@ -181,7 +192,7 @@ void server::addChannel(channel newChannel, user user)
 
 }
 
-user server::getUserBySocket(int socket)
+user &server::getUserBySocket(int socket)
 {
     int usersSize = users.size();
     for (int i = 0; i < usersSize; i++)
@@ -192,7 +203,7 @@ user server::getUserBySocket(int socket)
             return users[i];
         }
     }
-    throw serverException("User not found in getUserBySocket");
+    throw serverException("User not found");
 }
 
 
@@ -206,8 +217,9 @@ std::vector<channel> server::getChannels()
     return channels;
 }
 
-server::serverException::~serverException()
+const char *server::serverException::what(void) const throw()
 {
+    return message.c_str();
 }
 
 server::serverException::serverException(std::string message)
@@ -215,9 +227,8 @@ server::serverException::serverException(std::string message)
     this->message = message;
 }
 
-std::string server::serverException::what()
+server::serverException::~serverException() throw()
 {
-    return message.c_str();
 }
 
 // int main() {

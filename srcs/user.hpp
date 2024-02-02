@@ -15,10 +15,11 @@ private:
     std::string nick;
     std::string ipAddress;
     int socket;
+    bool registered;
 public:
-    user(std::string userName, std::string nick, std::string ipAddress, int socket, std::vector<user> users);
+    user(std::string nick, std::string ipAddress, int socket, std::vector<user> users);
     ~user();
-    // void setUserName(std::string userName);
+    void setUserName(std::string userName, std::vector<user> users);
     // void setNick(std::string nick);
     // void setIpAddress(std::string ipAddress);
     // void setSocket(int socket);
@@ -30,17 +31,13 @@ public:
     // void sendPrivateMessage(std::string message, user recipient);
     // void sendChannelMessage(std::string message, channel channel);
     class userException : public std::exception
-    {
-        private:
-            std::string message;
-        public:
-            userException(std::string message){this->message = message;}
-            ~userException()
-            {
-            }
-            std::string what()
-            {
-                return message.c_str();
-            }
-    };
+        {
+            private:
+                std::string message;
+            public:
+                userException(std::string message);
+                const char *what(void) const throw();
+                ~userException() throw();
+
+        };
 };

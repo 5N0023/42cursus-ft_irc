@@ -37,7 +37,8 @@ class channel
                 std::string message;
             public:
                 channelException(std::string message);
-                ~channelException();
-                std::string what();
+                const char *what(void) const throw();
+                ~channelException() throw();
+
         };
 };

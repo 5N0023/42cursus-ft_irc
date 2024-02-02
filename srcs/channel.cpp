@@ -42,8 +42,11 @@ std::vector<user> channel::getMembers()
     return members;
 }
 
-channel::channelException::~channelException()
+
+
+const char *channel::channelException::what(void) const throw()
 {
+    return message.c_str();
 }
 
 channel::channelException::channelException(std::string message)
@@ -51,7 +54,7 @@ channel::channelException::channelException(std::string message)
     this->message = message;
 }
 
-std::string channel::channelException::what()
+
+channel::channelException::~channelException() throw()
 {
-    return message.c_str();
 }
