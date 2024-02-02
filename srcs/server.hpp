@@ -6,6 +6,14 @@
 #include <exception>
 #include "user.hpp"
 #include "channel.hpp"
+#include "utils.hpp"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
+#include <poll.h>
+#include <unordered_map>
 
 class server
 {
@@ -14,6 +22,7 @@ class server
         std::string password;
         std::vector<user> users;
         std::vector<channel> channels;
+        int listeningSocket;
     public:
         server(int port, std::string password);
         ~server();
@@ -22,10 +31,11 @@ class server
         void stop();
         void addUser(user newUser);
         void removeUser(user user);
-        void addChannel(channel newChannel);
+        void addChannel(channel newChannel, user user);
         void removeChannel(channel channel);
         std::vector<user> getUsers();
         std::vector<channel> getChannels();
+        user getUserBySocket(int socket);
         class serverException : public std::exception
         {
             private:
