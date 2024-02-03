@@ -33,6 +33,7 @@ class server
         void removeUser(user user);
         void addChannel(channel newChannel, user user);
         void removeChannel(channel channel);
+        void prvmsg(user sender, std::string receiver, std::string message);
         std::vector<user> getUsers();
         std::vector<channel> getChannels();
         user &getUserBySocket(int socket);

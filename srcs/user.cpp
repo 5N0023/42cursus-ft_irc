@@ -9,7 +9,7 @@ user::user(std::string nick, std::string ipAddress, int socket, std::vector<user
     int usersSize = users.size();
     for (int i = 0; i < usersSize; i++)
     {
-        if (users[i].getUserName() == userName)
+        if (users[i].getNick() == nick)
         {
             throw userException("User already exists");
         }
@@ -57,14 +57,6 @@ user::userException::~userException() throw()
 
 void user::setUserName(std::string userName, std::vector<user> users)
 {
-    int usersSize = users.size();
-    for (int i = 0; i < usersSize; i++)
-    {
-        if (users[i].getUserName() == userName)
-        {
-            throw userException("User already exists");
-        }
-    }
     this->userName = userName;
     this->registered = true;
     std::cout << "Username changed to " << userName << std::endl;
