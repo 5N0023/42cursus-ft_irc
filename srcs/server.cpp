@@ -2,6 +2,8 @@
 
 server::server(int port, std::string password): port(port), password(password)
 {
+    // init users and channels
+    
     listeningSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listeningSocket < 0)
     {
@@ -90,6 +92,10 @@ void server::run()
                         fds.erase(fds.begin() + i);
                         --i; // Adjust index after erase
                     }
+                    else if (bytesRead > 512)
+                    {
+                        std::cerr << "Received too many bytes\n";
+                    }
                     else
                     {
                         std::cout << "Received from " << clientIPs[fds[i].fd] << ": " << std::string(buffer, bytesRead) << " socket: " << fds[i].fd << "\n";
@@ -138,14 +144,55 @@ void server::run()
                         if (memcmp(buffer, "JOIN", 4) == 0)
                         {
                             try {
-                                channel newChannel(std::string(buffer + 5, bytesRead - 5));
                                 user joinedUser = this->getUserBySocket(fds[i].fd);
-                                std::string channel = std::string(buffer + 5, bytesRead - 5);
+                                std::string channelName = std::string(buffer + 5, bytesRead - 5);
+                                for (int i = 0; i < channelName.size(); i++)
+                                {
+                                    if (channelName[i] == ' ' || channelName[i] == '\n')
+                                    {
+                                        channelName = channelName.substr(0, i);
+                                        break;
+                                    }
+                                }
+                                channel newChannel(channelName);
                                 this->addChannel(newChannel, joinedUser);
                             }
                             catch (channel::channelException &e)
                             {
                                 std::cerr << "Error JOIN: " << e.what() << "\n";
+                            }
+                        }
+                        if (memcmp(buffer, "PART", 4) == 0)
+                        {
+                            try {
+                                user partUser = this->getUserBySocket(fds[i].fd);
+                                std::cout << "partUser = " << partUser.getNick() << std::endl;
+                                std::string channelName = std::string(buffer + 5, bytesRead - 5);
+                                for (int i = 0; i < channelName.size(); i++)
+                                {
+                                    if (channelName[i] == ' ' || channelName[i] == '\n')
+                                    {
+                                        channelName = channelName.substr(0, i);
+                                        break;
+                                    }
+                                }
+                                for (int i = 0; i < channels.size(); i++)
+                                {
+                                    if (channels[i].getName() == channelName)
+                                    {
+                                        this->channels[i].removeMember(partUser);
+                                        if (channels[i].getMembers().size() == 0)
+                                        {
+                                            std::cout << "removing channel 1= " << channels[i].getName() << std::endl;
+                                            this->removeChannel(channels[i]);
+                                            i--;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (channel::channelException &e)
+                            {
+                                std::cerr << "Error PART: " << e.what() << "\n";
                             }
                         }
                         if (memcmp(buffer, "PRIVMSG", 7) == 0)
@@ -167,7 +214,10 @@ void server::run()
                             }
                             user sender = this->getUserBySocket(fds[i].fd);
                             try {
-                                this->prvmsg(sender, receiver, message);
+                                if (receiver[0] == '#')
+                                    this->prvmsgchannel(sender, receiver, message);
+                                else 
+                                    this->prvmsg(sender, receiver, message);
                             }
                             catch (server::serverException &e)
                             {
@@ -197,10 +247,15 @@ void server::addUser(user newUser)
             throw serverException("User already exists");
         }
     }
-    std::cout << "useradded nick = " << newUser.getNick() << std::endl;
     users.push_back(newUser);
     std::string reply = RPL_WELCOME(newUser.getNick(), newUser.getIpAddress());
     send(newUser.getSocket(), reply.c_str(), reply.size(), 0);
+    std::string reply2 = RPL_YOURHOST(newUser.getNick(), newUser.getIpAddress());
+    send(newUser.getSocket(), reply2.c_str(), reply2.size(), 0);
+    std::string reply3 = RPL_CREATED(newUser.getNick(), newUser.getIpAddress());
+    send(newUser.getSocket(), reply3.c_str(), reply3.size(), 0);
+    std::string reply4 = RPL_MYINFO(newUser.getNick(), newUser.getIpAddress());
+    send(newUser.getSocket(), reply4.c_str(), reply4.size(), 0);
 }
 
 void server::removeUser(user user)
@@ -220,7 +275,7 @@ void server::removeUser(user user)
 
 void server::addChannel(channel newChannel, user user)
 {
-    std::cout << "newChannel.getName() = " << newChannel.getName() << std::endl;
+    bool channelExists = false;
     if (newChannel.getName()[0] != '#')
     {
         std::string reply = ERR_BADCHANNELNAME(user.getNick(), user.getIpAddress(), newChannel.getName());
@@ -234,9 +289,16 @@ void server::addChannel(channel newChannel, user user)
         {
             std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
             send(user.getSocket(), reply.c_str(), reply.size(), 0);
-            return;
+            channelExists = true;
+            channels[i].addMember(user);
+            break;
         }
     }
+    if (channelExists)
+    {
+        return;
+    }
+    newChannel.addMember(user);
     channels.push_back(newChannel);
     std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
     send(user.getSocket(), reply.c_str(), reply.size(), 0);
@@ -257,12 +319,12 @@ user &server::getUserBySocket(int socket)
 }
 
 
-std::vector<user> server::getUsers()
+std::vector<user> &server::getUsers()
 {
     return users;
 }
 
-std::vector<channel> server::getChannels()
+std::vector<channel> &server::getChannels()
 {
     return channels;
 }
@@ -285,15 +347,80 @@ void server::prvmsg(user sender, std::string receiver, std::string message)
 {
     std::vector<user> users = this->getUsers();
     std::string reply;
-    for (int i = 0; i < users.size(); i++)
+    std::vector<std::string> receivers;
+    for (int i = 0; i < receiver.size(); i++)
     {
-        if (users[i].getNick() == receiver)
+        if (receiver[i] == ',')
         {
-            reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receiver, message);
-            send(users[i].getSocket(), reply.c_str(), reply.size(), 0);
-            std::cout << "sender = " << sender.getNick() << " receiver = " << receiver << " message = " << message << std::endl;
-            return;
+            receivers.push_back(receiver.substr(0, i));
+            receiver = receiver.substr(i + 1, receiver.size() - i - 1);
+            i = 0;
+        }
+        else if (i == receiver.size() - 1)
+        {
+            receivers.push_back(receiver);
         }
     }
-    throw serverException("User not found");
+    for (int i = 0; i < receivers.size(); i++)
+    {
+        for (int j = 0; j < users.size(); j++)
+        {
+            if (users[j].getNick() == receivers[i])
+            {
+                reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receivers[i], message);
+                send(users[j].getSocket(), reply.c_str(), reply.size(), 0);
+            }
+        }
+    }
 }
+void server::prvmsgchannel(user sender, std::string receiverschannels, std::string message)
+{
+    std::string reply;
+    std::vector<std::string> receivers;
+    for (int i = 0; i < receiverschannels.size(); i++)
+    {
+        if (receiverschannels[i] == ',')
+        {
+            receivers.push_back(receiverschannels.substr(0, i));
+            receiverschannels = receiverschannels.substr(i + 1, receiverschannels.size() - i - 1);
+            i = 0;
+        }
+        else if (i == receiverschannels.size() - 1)
+        {
+            receivers.push_back(receiverschannels);
+        }
+    }
+
+    for (int i = 0; i < receivers.size(); i++)
+    {
+        for (int j = 0; j < channels.size(); j++)
+        {
+            std::cout << channels[j].getName().size() << " " << receivers[i].size() << std::endl;
+            if (channels[j].getName() == receivers[i])
+            {
+                std::vector<user> members = channels[j].getMembers();
+                for (int k = 0; k < members.size(); k++)
+                {
+                    if (members[k].getNick() == sender.getNick())
+                        continue;
+                    reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receivers[i], message);
+                    send(members[k].getSocket(), reply.c_str(), reply.size(), 0);
+                }
+            }
+        }
+    }
+}
+
+ void server::removeChannel(channel channel)
+ {
+     int channelsSize = channels.size();
+     for (int i = 0; i < channelsSize; i++)
+     {
+         if (channels[i].getName() == channel.getName())
+         {
+             channels.erase(channels.begin() + i);
+             return;
+         }
+     }
+     throw serverException("Channel not found");
+ }

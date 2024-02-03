@@ -7,6 +7,14 @@ user::user(std::string nick, std::string ipAddress, int socket, std::vector<user
     this->ipAddress = ipAddress;
     this->socket = socket;
     int usersSize = users.size();
+    if (nick == "")
+    {
+        throw userException("Nick cannot be empty");
+    }
+    if (nick.length() > 9)
+    {
+        throw userException("Nick cannot be longer than 9 characters");
+    }
     for (int i = 0; i < usersSize; i++)
     {
         if (users[i].getNick() == nick)

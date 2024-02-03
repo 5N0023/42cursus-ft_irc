@@ -15,6 +15,9 @@
 #include <poll.h>
 #include <unordered_map>
 
+
+class user;
+class channel;
 class server
 {
     private:
@@ -34,8 +37,9 @@ class server
         void addChannel(channel newChannel, user user);
         void removeChannel(channel channel);
         void prvmsg(user sender, std::string receiver, std::string message);
-        std::vector<user> getUsers();
-        std::vector<channel> getChannels();
+        void prvmsgchannel(user sender, std::string channel, std::string message);
+        std::vector<user> &getUsers();
+        std::vector<channel> &getChannels();
         user &getUserBySocket(int socket);
         class serverException : public std::exception
         {

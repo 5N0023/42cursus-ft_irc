@@ -6,7 +6,10 @@
 #include <vector>
 #include <exception>
 #include "user.hpp"
+#include "server.hpp"
 
+
+class server;
 class user;
 class channel
 {
@@ -28,9 +31,10 @@ class channel
         // void removeOperator(user op);
         void setPassword(std::string password);
         std::string getPassword();
+        void removeMember(user member);
         // void setTopic(std::string topic);
         // std::string getTopic();
-        std::vector<user> getMembers();
+        std::vector<user> &getMembers();
         class channelException : public std::exception
         {
             private:
