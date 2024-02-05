@@ -3,7 +3,7 @@
 #define RPL_CREATED(nick, hostname) ":" + hostname + " 003 " + nick + " :This server was created by mlektaib!\r\n"
 #define RPL_MYINFO(nick, hostname) ":" + hostname + " 004 " + nick + " :Host: " + hostname + ", Version: 1.0\r\n"
 
-#define ERR_PASSWDMISMATCH(nick, hostname) ":" + hostname + " 464 " + nick + " :Password incorrect !\r\n"
+#define ERR_PASSWDMISMATCH(target, hostname) ":" + hostname + " 464 " + target + " :Password incorrect ! Please try again by using PASS command\r\n"
 #define ERR_ALREADYREGISTERED(nick, hostname) ":" + hostname + " 462 " + nick + " :You already registered !\r\n"
 #define ERR_NOTREGISTERED(nick, hostname) ":" + hostname + " 451 " + nick + " :You have not registered !\r\n"
 
@@ -12,7 +12,8 @@
 #define ERR_NICKNAMEINUSE(nick, hostname) ":" + hostname + " 433 " + nick + " :Nickname is already in use ! you can chose other nickname by using NICK command\r\n"
 #define RPL_NICKCHANGE(oldNick, nick, hostname) ":" + oldNick + " NICK " + nick + "\r\n"
 
-#define ERR_NEEDMOREPARAMS(nick, hostname) ":" + hostname + " 461 " + nick + " :Not enough parameters !\r\n"
+#define ERR_NEEDPASS(nick, hostname) ":" + hostname + " 461 " + nick + " : you need to enter a password by using PASS command\r\n"
+#define ERR_NEEDNICK(nick, hostname) ":" + hostname + " 461 " + nick + " : you need to enter a nickname by using NICK command\r\n"
 
 #define ERR_BADCHANNELNAME(nick, hostname, channelname) ":" + hostname + " 476 " + nick + " " + channelname + " :Invalid channel name." + "\r\n"
 #define ERR_CHANNELISFULL(nick, channelName) ":" + nick + " 471 " + channelName + " :Cannot join channel (+l)\r\n"

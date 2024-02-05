@@ -74,17 +74,13 @@ channel::channelException::~channelException() throw()
 
 void channel::removeMember(user member)
 {
-    std::cout << "Removing member from channel" << std::endl;
-
     int membersSize = members.size();
     for (int i = 0; i < membersSize; i++)
     {
         if (members[i].getSocket() == member.getSocket())
         {
             std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
-            std::cout <<  "members before erase: " << members.size() << std::endl;
             members.erase(members.begin() + i);
-            std::cout <<  "members after erase: " << members.size() << std::endl;
             send(member.getSocket(), reply.c_str(), reply.size(), 0);
             return;
         }

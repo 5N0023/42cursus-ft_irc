@@ -1,27 +1,11 @@
 #include "user.hpp"
 
-user::user(std::string nick, std::string ipAddress, int socket, std::vector<user> users)
+user::user(std::string ipAddress, int socket)
 {
     this->registered = false;
-    this->nick = nick;
+    this->passwordCorrect = false;
     this->ipAddress = ipAddress;
     this->socket = socket;
-    int usersSize = users.size();
-    if (nick == "")
-    {
-        throw userException("Nick cannot be empty");
-    }
-    if (nick.length() > 9)
-    {
-        throw userException("Nick cannot be longer than 9 characters");
-    }
-    for (int i = 0; i < usersSize; i++)
-    {
-        if (users[i].getNick() == nick)
-        {
-            throw userException("User already exists");
-        }
-    }
 }
 
 user::~user()
@@ -63,9 +47,47 @@ user::userException::~userException() throw()
 {
 }
 
-void user::setUserName(std::string userName, std::vector<user> users)
+void user::setUserName(std::string userName)
 {
-    this->userName = userName;
-    this->registered = true;
-    std::cout << "Username changed to " << userName << std::endl;
+    // this->userName = userName;
+    // this->registered = true;
+    // std::cout << "Username changed to " << userName << std::endl;
 }
+
+
+bool user::getRegistered()
+{
+    return registered;
+}
+
+bool user::getPasswordCorrect()
+{
+    return passwordCorrect;
+}
+
+void user::setPassConfirmed(bool pass)
+{
+    passwordCorrect = pass;
+}
+
+
+void user::setNick(std::string nick, std::vector<user> users)
+{
+    for (int i = 0; i < users.size(); i++)
+    {
+        if (users[i].getNick() == nick)
+        {
+            throw userException("Nick already in use");
+        }
+    }
+    this->nick = nick;
+    this->registered = true;
+    std::string reply = RPL_WELCOME(this->getNick(), this->getIpAddress());
+    send(this->getSocket(), reply.c_str(), reply.size(), 0);
+    std::string reply2 = RPL_YOURHOST(this->getNick(), this->getIpAddress());
+    send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
+    std::string reply3 = RPL_CREATED(this->getNick(), this->getIpAddress());
+    send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
+    std::string reply4 = RPL_MYINFO(this->getNick(), this->getIpAddress());
+    send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+}   

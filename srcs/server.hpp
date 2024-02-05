@@ -25,6 +25,7 @@ class server
         std::string password;
         std::vector<user> users;
         std::vector<channel> channels;
+        std::string serverIP;
         int listeningSocket;
     public:
         server(int port, std::string password);
@@ -40,7 +41,7 @@ class server
         void prvmsgchannel(user sender, std::string channel, std::string message);
         std::vector<user> &getUsers();
         std::vector<channel> &getChannels();
-        user &getUserBySocket(int socket);
+        int getUserBySocket(int socket);
         class serverException : public std::exception
         {
             private:

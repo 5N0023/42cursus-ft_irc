@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
         server ircServer(std::stoi(argv[1]), argv[2]);
         ircServer.run();
     } catch (server::serverException &e) {
-        std::cerr << "Error: " << e.what() << "\n";
+        std::cerr << "Error in main: " << e.what() << "\n";
         return -1;
     }
     return 0;
