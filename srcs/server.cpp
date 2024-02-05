@@ -123,14 +123,31 @@ void server::run()
                                 }
                                 std::cerr << "new user here" << std::endl;
                         }
+                        std::string sBuffer = std::string(buffer, bytesRead);
+                        if (sBuffer.find('\n') == std::string::npos)
+                        {
+                            if (this->getUserBySocket(fds[i].fd) != -1)
+                                users[this->getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                            continue;
+                        }
+                        else
+                        {
+                            if (this->getUserBySocket(fds[i].fd) != -1)
+                            {
+                                users[this->getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                                sBuffer = users[this->getUserBySocket(fds[i].fd)].getBuffer();
+                                users[this->getUserBySocket(fds[i].fd)].clearBuffer();
+                            }
+                        }
+                        std::cerr << "Received: " << sBuffer << std::endl;
                         try {
-                            if (memcmp(buffer, "PASS", 4) != 0 && this->getUserBySocket(fds[i].fd) != -1 &&  users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
+                            if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
                             {
                                 std::string reply = ERR_NEEDPASS(clientIPs[fds[i].fd], serverIP);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 continue;
                             }
-                            if (memcmp(buffer, "NICK", 4) != 0 && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getRegistered() == false && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
+                            if (sBuffer.substr(0, 4) != "NICK" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getRegistered() == false && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                             {
                                 std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
@@ -141,15 +158,16 @@ void server::run()
                         {
                             std::cerr << "Error: " << e.what() << "\n";
                         }
-                        if (memcmp(buffer, "PASS", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "PASS")
                         {
                             try{
-                                std::string pass = std::string(buffer + 5, bytesRead - 5);
+                                std::string pass = sBuffer.substr(5, sBuffer.size() - 1);
                                 if (pass[pass.size() - 1] == '\n')
-                                    pass = pass.substr(0, pass.size() - 1);
-                                else 
                                     pass = pass.substr(0, pass.size() - 2);
-                                    
+                                else 
+                                    pass = pass.substr(0, pass.size() - 3);
+                                std::cerr << "Password received: " << pass << "length: " << pass.size() << "\n";
+                                std::cerr << "Password expected: " << password << "length: " << password.size() << "\n";
                                 if (pass != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
@@ -171,7 +189,7 @@ void server::run()
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
                         }
-                        if (memcmp(buffer, "QUIT", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "QUIT")
                         {
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
@@ -187,14 +205,14 @@ void server::run()
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
                         }
-                        if (memcmp(buffer, "NICK", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "NICK")
                         {
                             std::cerr << "NICK command received" << std::endl;
-                            std::string nick = std::string(buffer + 5, bytesRead - 5);
+                            std::string nick = sBuffer.substr(5, sBuffer.size() - 1);
                             if (nick[nick.size() - 1] == '\n')
-                                nick = nick.substr(0, nick.size() - 1);
-                            else
                                 nick = nick.substr(0, nick.size() - 2);
+                            else
+                                nick = nick.substr(0, nick.size() - 3);
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
@@ -208,13 +226,13 @@ void server::run()
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
-                        if (memcmp(buffer, "USER", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "USER")
                         {
-                            std::string userName = std::string(buffer + 5, bytesRead - 5);
+                            std::string userName = sBuffer.substr(5, sBuffer.size() - 1);
                             if (userName[userName.size() - 1] == '\n')
-                                userName = userName.substr(0, userName.size() - 1);
-                            else
                                 userName = userName.substr(0, userName.size() - 2);
+                            else
+                                userName = userName.substr(0, userName.size() - 3);
                             try {
                                 // i have no idea why this is not working
                                 int user = this->getUserBySocket(fds[i].fd);
@@ -226,15 +244,15 @@ void server::run()
                                 std::cerr << "Error USER: " << e.what() << "\n";
                             }
                         }
-                        if (memcmp(buffer, "JOIN", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "JOIN")
                         {
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
-                                std::string channelName = std::string(buffer + 5, bytesRead - 5);
+                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
                                 if (channelName[channelName.size() - 1] == '\n')
-                                    channelName = channelName.substr(0, channelName.size() - 1);
-                                else
                                     channelName = channelName.substr(0, channelName.size() - 2);
+                                else
+                                    channelName = channelName.substr(0, channelName.size() - 3);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == '\n')
@@ -243,6 +261,7 @@ void server::run()
                                         break;
                                     }
                                 }
+                                std::cerr << "Channel name: |" << channelName << "|\n";
                                 channel newChannel(channelName);
                                 if (joinedUser != -1)
                                     this->addChannel(newChannel, users[joinedUser]);
@@ -252,17 +271,17 @@ void server::run()
                                 std::cerr << "Error JOIN: " << e.what() << "\n";
                             }
                         }
-                        if (memcmp(buffer, "PART", 4) == 0)
+                        if (sBuffer.substr(0, 4) == "PART")
                         {
                             try {
                                 int partUser = this->getUserBySocket(fds[i].fd);
                                 if (partUser == -1)
                                     throw serverException("User not found");
-                                std::string channelName = std::string(buffer + 5, bytesRead - 5);
+                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
                                 if (channelName[channelName.size() - 1] == '\n')
-                                    channelName = channelName.substr(0, channelName.size() - 1);
-                                else
                                     channelName = channelName.substr(0, channelName.size() - 2);
+                                else
+                                    channelName = channelName.substr(0, channelName.size() - 3);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == ',')
@@ -289,9 +308,9 @@ void server::run()
                                 std::cerr << "Error PART: " << e.what() << "\n";
                             }
                         }
-                        if (memcmp(buffer, "PRIVMSG", 7) == 0)
+                        if (sBuffer.substr(0, 7) == "PRIVMSG")
                         {
-                            std::string receiver = std::string(buffer + 8, bytesRead - 8);
+                            std::string receiver = sBuffer.substr(8, sBuffer.size() - 1);
                             for (int i = 0; i < receiver.size(); i++)
                             {
                                 if (receiver[i] == ' ')
@@ -300,12 +319,13 @@ void server::run()
                                     break;
                                 }
                             }
-                            std::string message = std::string(buffer + 8, bytesRead - 8);
+                            std::string message = sBuffer.substr(8, sBuffer.size() - 1);
                             if (message[message.size() - 1] == '\n')
-                                message = message.substr(0, message.size() - 1);
-                            else
                                 message = message.substr(0, message.size() - 2);
-                            message = message.substr(receiver.size() + 1, message.size() - receiver.size() - 3);
+                            else
+                                message = message.substr(0, message.size() - 3);
+                            std::cerr << "Receiver: " << receiver << " Message: " << message << std::endl;
+                            message = message.substr(receiver.size() + 1, message.size() - receiver.size() - 1);
                             if (message[0] == ':')
                             {
                                 message = message.substr(1, message.size() - 2);

@@ -17,7 +17,7 @@ class channel
         std::string name;
         std::vector<user> members;
         std::vector<user> operators;
-        std::string password;
+        std::string key;
         std::string topic;
         bool mode; // false for public, true for invite-only
     public:
@@ -29,8 +29,8 @@ class channel
         // void removeMember(user member);
         // void addOperator(user op);
         // void removeOperator(user op);
-        void setPassword(std::string password);
-        std::string getPassword();
+        void setKey(std::string key);
+        std::string getKey();
         void removeMember(user member);
         // void setTopic(std::string topic);
         // std::string getTopic();

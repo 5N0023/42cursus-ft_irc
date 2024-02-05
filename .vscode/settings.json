@@ -68,6 +68,8 @@
         "mutex": "cpp",
         "optional": "cpp",
         "ratio": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "__tree": "cpp",
+        "map": "cpp"
     }
 }

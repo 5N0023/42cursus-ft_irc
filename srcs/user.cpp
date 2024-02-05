@@ -91,3 +91,23 @@ void user::setNick(std::string nick, std::vector<user> users)
     std::string reply4 = RPL_MYINFO(this->getNick(), this->getIpAddress());
     send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
 }   
+
+void user::setBuffer(std::string Buffer)
+{
+    this->Buffer = Buffer;
+}
+
+std::string user::getBuffer()
+{
+    return Buffer;
+}
+
+void user::appendBuffer(std::string Buffer)
+{
+    this->Buffer.append(Buffer);
+}
+
+void user::clearBuffer()
+{
+    this->Buffer.clear();
+}

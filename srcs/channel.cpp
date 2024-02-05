@@ -11,7 +11,6 @@ channel::channel(std::string name)
     if (name.length() == 0)
         throw channelException("Channel name cannot be empty");
     this->mode = false;
-    this->password = "";
 }
 
 channel::~channel()
@@ -40,14 +39,14 @@ void channel::addMember(user member)
     members.push_back(member);
 }
 
-void channel::setPassword(std::string password)
+void channel::setKey(std::string key)
 {
-    this->password = password;
+    this->key = key;
 }
 
-std::string channel::getPassword()
+std::string channel::getKey()
 {
-    return password;
+    return key;
 }
 
 std::vector<user> &channel::getMembers()

@@ -11,6 +11,7 @@ class channel;
 class user
 {
     private:
+        std::string Buffer;
         std::string userName;
         std::string nick;
         std::string ipAddress;
@@ -20,6 +21,10 @@ class user
     public:
         user(std::string ipAddress, int socket);
         ~user();
+        void setBuffer(std::string Buffer);
+        std::string getBuffer();
+        void appendBuffer(std::string Buffer);
+        void clearBuffer();
         void setUserName(std::string userName);
         void setNick(std::string nick, std::vector<user> users);
         bool getRegistered();
