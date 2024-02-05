@@ -47,7 +47,7 @@ void server::run()
 
 
     // Map to store client IP addresses
-    std::unordered_map<int, std::string> clientIPs;
+    std::map<int, std::string> clientIPs;
 
     while (true)
     {
@@ -113,14 +113,15 @@ void server::run()
                         if (this->getUserBySocket(fds[i].fd) == -1)
                         {
 
-                        try {
-                            this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
-                            }
-                        catch (user::userException &e)
-                            {
-                                std::cerr << "Error: " << e.what() << "\n";
-                            }
-                            std::cerr << "new user here" << std::endl;
+                            try {
+                                    std::cerr << "new user here with socket " << fds[i].fd << std::endl;
+                                    this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
+                                }
+                            catch (user::userException &e)
+                                {
+                                    std::cerr << "Error: " << e.what() << "\n";
+                                }
+                                std::cerr << "new user here" << std::endl;
                         }
                         try {
                             if (memcmp(buffer, "PASS", 4) != 0 && this->getUserBySocket(fds[i].fd) != -1 &&  users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
@@ -144,7 +145,11 @@ void server::run()
                         {
                             try{
                                 std::string pass = std::string(buffer + 5, bytesRead - 5);
-                                pass = pass.substr(0, pass.size() - 2);
+                                if (pass[pass.size() - 1] == '\n')
+                                    pass = pass.substr(0, pass.size() - 1);
+                                else 
+                                    pass = pass.substr(0, pass.size() - 2);
+                                    
                                 if (pass != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
@@ -186,7 +191,10 @@ void server::run()
                         {
                             std::cerr << "NICK command received" << std::endl;
                             std::string nick = std::string(buffer + 5, bytesRead - 5);
-                            nick = nick.substr(0, nick.size() - 2);
+                            if (nick[nick.size() - 1] == '\n')
+                                nick = nick.substr(0, nick.size() - 1);
+                            else
+                                nick = nick.substr(0, nick.size() - 2);
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
@@ -203,6 +211,10 @@ void server::run()
                         if (memcmp(buffer, "USER", 4) == 0)
                         {
                             std::string userName = std::string(buffer + 5, bytesRead - 5);
+                            if (userName[userName.size() - 1] == '\n')
+                                userName = userName.substr(0, userName.size() - 1);
+                            else
+                                userName = userName.substr(0, userName.size() - 2);
                             try {
                                 // i have no idea why this is not working
                                 int user = this->getUserBySocket(fds[i].fd);
@@ -219,7 +231,10 @@ void server::run()
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
                                 std::string channelName = std::string(buffer + 5, bytesRead - 5);
-                                channelName = channelName.substr(0, channelName.size() - 2);
+                                if (channelName[channelName.size() - 1] == '\n')
+                                    channelName = channelName.substr(0, channelName.size() - 1);
+                                else
+                                    channelName = channelName.substr(0, channelName.size() - 2);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == '\n')
@@ -244,6 +259,10 @@ void server::run()
                                 if (partUser == -1)
                                     throw serverException("User not found");
                                 std::string channelName = std::string(buffer + 5, bytesRead - 5);
+                                if (channelName[channelName.size() - 1] == '\n')
+                                    channelName = channelName.substr(0, channelName.size() - 1);
+                                else
+                                    channelName = channelName.substr(0, channelName.size() - 2);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == ',')
@@ -282,6 +301,10 @@ void server::run()
                                 }
                             }
                             std::string message = std::string(buffer + 8, bytesRead - 8);
+                            if (message[message.size() - 1] == '\n')
+                                message = message.substr(0, message.size() - 1);
+                            else
+                                message = message.substr(0, message.size() - 2);
                             message = message.substr(receiver.size() + 1, message.size() - receiver.size() - 3);
                             if (message[0] == ':')
                             {
