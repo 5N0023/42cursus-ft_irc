@@ -86,3 +86,15 @@ void channel::removeMember(user member)
     }
     throw channelException("User not found in channel");
 }
+
+bool channel::isMember(user member)
+{
+    for (int i = 0; i < members.size(); i++)
+    {
+        if (members[i].getNick() == member.getNick())
+        {
+            return true;
+        }
+    }
+    return false;
+}

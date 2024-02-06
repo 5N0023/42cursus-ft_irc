@@ -14,7 +14,7 @@
 #include <cstring>
 #include <poll.h>
 #include <map>
-
+#include <fcntl.h>
 
 class user;
 class channel;

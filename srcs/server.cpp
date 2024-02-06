@@ -22,8 +22,11 @@ server::server(int port, std::string password): port(port), password(password)
     {
         throw serverException("Error binding socket\n");
     }
+    if (fcntl(listeningSocket, F_SETFL, O_NONBLOCK) < 0)
+    {
+        throw serverException("Error setting socket to non-blocking\n");
+    }
 
-    // Listen on socket
     if (listen(listeningSocket, 1024) < 0)
     {
         throw serverException("Error listening on socket\n");
@@ -64,12 +67,17 @@ void server::run()
                 if (fds[i].fd == listeningSocket)
                 {
                     // Accept new connection
+                    try {
                     struct sockaddr_in clientAddr;
                     socklen_t clientAddrLen = sizeof(clientAddr);
                     int clientSocket = accept(listeningSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
                     if (clientSocket < 0)
                     {
                         throw serverException("Error accepting connection\n");
+                    }
+                    if  (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
+                    {
+                        throw serverException("Error setting socket to non-blocking\n");
                     }
 
                     // Store client IP address
@@ -79,6 +87,11 @@ void server::run()
                     clientFd.fd = clientSocket;
                     clientFd.events = POLLIN;
                     fds.push_back(clientFd);
+                    }
+                    catch (server::serverException &e)
+                    {
+                        std::cerr << "Error: " << e.what() << "\n";
+                    }
                 }
                 else
                 {
@@ -106,7 +119,8 @@ void server::run()
                     }
                     else if (bytesRead > 512)
                     {
-                        std::cerr << "Received too many bytes\n";
+                        std::string reply = ERR_INPUTTOOLONG(clientIPs[fds[i].fd], serverIP);
+                        send(fds[i].fd, reply.c_str(), reply.size(), 0);
                     }
                     else
                     {
@@ -114,14 +128,12 @@ void server::run()
                         {
 
                             try {
-                                    std::cerr << "new user here with socket " << fds[i].fd << std::endl;
                                     this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
                                 }
                             catch (user::userException &e)
                                 {
                                     std::cerr << "Error: " << e.what() << "\n";
                                 }
-                                std::cerr << "new user here" << std::endl;
                         }
                         std::string sBuffer = std::string(buffer, bytesRead);
                         if (sBuffer.find('\n') == std::string::npos)
@@ -139,7 +151,10 @@ void server::run()
                                 users[this->getUserBySocket(fds[i].fd)].clearBuffer();
                             }
                         }
-                        std::cerr << "Received: " << sBuffer << std::endl;
+                        if (sBuffer[sBuffer.size() - 1] == '\n')
+                            sBuffer = sBuffer.substr(0, sBuffer.size() - 2);
+                        else
+                            sBuffer = sBuffer.substr(0, sBuffer.size() - 3);
                         try {
                             if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
                             {
@@ -160,14 +175,9 @@ void server::run()
                         }
                         if (sBuffer.substr(0, 4) == "PASS")
                         {
-                            try{
+                            try
+                            {
                                 std::string pass = sBuffer.substr(5, sBuffer.size() - 1);
-                                if (pass[pass.size() - 1] == '\n')
-                                    pass = pass.substr(0, pass.size() - 2);
-                                else 
-                                    pass = pass.substr(0, pass.size() - 3);
-                                std::cerr << "Password received: " << pass << "length: " << pass.size() << "\n";
-                                std::cerr << "Password expected: " << password << "length: " << password.size() << "\n";
                                 if (pass != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
@@ -175,13 +185,9 @@ void server::run()
                                 }
                                 else
                                 {
-                                    std::cerr << "Password correct" << std::endl;
                                     int user = this->getUserBySocket(fds[i].fd);
                                     if (user != -1)
-                                    {
-                                        std::cerr << "user with socket " << fds[i].fd << " has password confirmed\n";
                                         users[user].setPassConfirmed(true);
-                                    }
                                 }
                             }
                             catch (user::userException &e)
@@ -189,7 +195,7 @@ void server::run()
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
                         }
-                        if (sBuffer.substr(0, 4) == "QUIT")
+                        else if (sBuffer.substr(0, 4) == "QUIT")
                         {
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
@@ -205,19 +211,14 @@ void server::run()
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
                         }
-                        if (sBuffer.substr(0, 4) == "NICK")
+                        else if (sBuffer.substr(0, 4) == "NICK")
                         {
                             std::cerr << "NICK command received" << std::endl;
                             std::string nick = sBuffer.substr(5, sBuffer.size() - 1);
-                            if (nick[nick.size() - 1] == '\n')
-                                nick = nick.substr(0, nick.size() - 2);
-                            else
-                                nick = nick.substr(0, nick.size() - 3);
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
                                     users[user].setNick(nick, users);
-                                std::cerr << "Nick set to " << nick << std::endl;
                             }
                             catch (user::userException &e)
                             {
@@ -226,16 +227,19 @@ void server::run()
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
-                        if (sBuffer.substr(0, 4) == "USER")
+                        else if (sBuffer.substr(0, 4) == "USER")
                         {
                             std::string userName = sBuffer.substr(5, sBuffer.size() - 1);
-                            if (userName[userName.size() - 1] == '\n')
-                                userName = userName.substr(0, userName.size() - 2);
-                            else
-                                userName = userName.substr(0, userName.size() - 3);
                             try {
-                                // i have no idea why this is not working
                                 int user = this->getUserBySocket(fds[i].fd);
+                                for (int i = 0; i < userName.size(); i++)
+                                {
+                                    if (userName[i] == ' ')
+                                    {
+                                        userName = userName.substr(0, i);
+                                        break;
+                                    }
+                                }
                                 if (user != -1)
                                     users[user].setUserName(userName);
                             }
@@ -244,15 +248,11 @@ void server::run()
                                 std::cerr << "Error USER: " << e.what() << "\n";
                             }
                         }
-                        if (sBuffer.substr(0, 4) == "JOIN")
+                        else if (sBuffer.substr(0, 4) == "JOIN")
                         {
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                if (channelName[channelName.size() - 1] == '\n')
-                                    channelName = channelName.substr(0, channelName.size() - 2);
-                                else
-                                    channelName = channelName.substr(0, channelName.size() - 3);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == '\n')
@@ -271,17 +271,13 @@ void server::run()
                                 std::cerr << "Error JOIN: " << e.what() << "\n";
                             }
                         }
-                        if (sBuffer.substr(0, 4) == "PART")
+                        else if (sBuffer.substr(0, 4) == "PART")
                         {
                             try {
                                 int partUser = this->getUserBySocket(fds[i].fd);
                                 if (partUser == -1)
                                     throw serverException("User not found");
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                if (channelName[channelName.size() - 1] == '\n')
-                                    channelName = channelName.substr(0, channelName.size() - 2);
-                                else
-                                    channelName = channelName.substr(0, channelName.size() - 3);
                                 for (int i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == ',')
@@ -308,7 +304,7 @@ void server::run()
                                 std::cerr << "Error PART: " << e.what() << "\n";
                             }
                         }
-                        if (sBuffer.substr(0, 7) == "PRIVMSG")
+                        else if (sBuffer.substr(0, 7) == "PRIVMSG")
                         {
                             std::string receiver = sBuffer.substr(8, sBuffer.size() - 1);
                             for (int i = 0; i < receiver.size(); i++)
@@ -320,28 +316,62 @@ void server::run()
                                 }
                             }
                             std::string message = sBuffer.substr(8, sBuffer.size() - 1);
-                            if (message[message.size() - 1] == '\n')
-                                message = message.substr(0, message.size() - 2);
-                            else
-                                message = message.substr(0, message.size() - 3);
-                            std::cerr << "Receiver: " << receiver << " Message: " << message << std::endl;
-                            message = message.substr(receiver.size() + 1, message.size() - receiver.size() - 1);
+                            message = message.substr(receiver.size() + 1, message.size() - 1);
+                            std::vector<std::string> receivers;
+                            for (int i = 0; i < receiver.size(); i++)
+                            {
+                                if (receiver[i] == ',')
+                                {
+                                    receivers.push_back(receiver.substr(0, i));
+                                    receiver = receiver.substr(i + 1, receiver.size() - i - 1);
+                                    i = 0;
+                                }
+                                else if (i == receiver.size() - 1)
+                                {
+                                    receivers.push_back(receiver);
+                                }
+                            }
                             if (message[0] == ':')
                             {
-                                message = message.substr(1, message.size() - 2);
+                                message = message.substr(1, message.size() - 1);
                             }
                             try {
                                 int sender = this->getUserBySocket(fds[i].fd);
                                 if (sender == -1)
                                     throw serverException("User not found");
-                                if (receiver[0] == '#')
-                                    this->prvmsgchannel(users[sender], receiver, message);
-                                else 
-                                    this->prvmsg(users[sender], receiver, message);
+                                for (int i = 0; i < receivers.size(); i++)
+                                {
+                                    if (receivers[i][0] == '#' || receivers[i][0] == '&')
+                                        this->prvmsgchannel(users[sender], receivers[i], message);
+                                    else 
+                                        this->prvmsg(users[sender], receivers[i], message);
+                                }
                             }
                             catch (server::serverException &e)
                             {
                                 std::cerr << "Error PRIVMSG: " << e.what() << "\n";
+                            }
+                        }
+                        else if (sBuffer.substr(0, 4) != "PONG")
+                        {
+                            std::string command = sBuffer.substr(0, sBuffer.size() - 1);
+                            if (command[command.size() - 1] == '\n')
+                                command = command.substr(0, command.size() - 2);
+                            else
+                                command = command.substr(0, command.size() - 3);
+                            for (int i = 0; i < command.size(); i++)
+                            {
+                                if (command[i] == ' ')
+                                {
+                                    command = command.substr(0, i);
+                                    break;
+                                }
+                            }
+                            int user = this->getUserBySocket(fds[i].fd);
+                            if (user != -1)
+                            {
+                                std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
+                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
                     }
@@ -460,66 +490,52 @@ void server::prvmsg(user sender, std::string receiver, std::string message)
 {
     std::vector<user> users = this->getUsers();
     std::string reply;
-    std::vector<std::string> receivers;
-    for (int i = 0; i < receiver.size(); i++)
+    bool userExists = false;
+    for (int j = 0; j < users.size(); j++)
     {
-        if (receiver[i] == ',')
+        if (users[j].getNick() == receiver)
         {
-            receivers.push_back(receiver.substr(0, i));
-            receiver = receiver.substr(i + 1, receiver.size() - i - 1);
-            i = 0;
-        }
-        else if (i == receiver.size() - 1)
-        {
-            receivers.push_back(receiver);
+            userExists = true;
+            reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receiver, message);
+            std::cerr << "reply: " << reply << std::endl;
+            send(users[j].getSocket(), reply.c_str(), reply.size(), 0);
         }
     }
-    for (int i = 0; i < receivers.size(); i++)
+    if (userExists == false)
     {
-        for (int j = 0; j < users.size(); j++)
-        {
-            if (users[j].getNick() == receivers[i])
-            {
-                reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receivers[i], message);
-                send(users[j].getSocket(), reply.c_str(), reply.size(), 0);
-            }
-        }
+        reply = ERR_NOSUCHNICK(serverIP, receiver);
+        send(sender.getSocket(), reply.c_str(), reply.size(), 0);
     }
 }
-void server::prvmsgchannel(user sender, std::string receiverschannels, std::string message)
+void server::prvmsgchannel(user sender, std::string receiverchannel, std::string message)
 {
     std::string reply;
-    std::vector<std::string> receivers;
-    for (int i = 0; i < receiverschannels.size(); i++)
+    bool channelExists = false;
+    for (int j = 0; j < channels.size(); j++)
     {
-        if (receiverschannels[i] == ',')
+        if (channels[j].getName() == receiverchannel)
         {
-            receivers.push_back(receiverschannels.substr(0, i));
-            receiverschannels = receiverschannels.substr(i + 1, receiverschannels.size() - i - 1);
-            i = 0;
-        }
-        else if (i == receiverschannels.size() - 1)
-        {
-            receivers.push_back(receiverschannels);
-        }
-    }
-
-    for (int i = 0; i < receivers.size(); i++)
-    {
-        for (int j = 0; j < channels.size(); j++)
-        {
-            if (channels[j].getName() == receivers[i])
+            channelExists = true;
+            if (channels[j].isMember(sender) == false)
             {
-                std::vector<user> members = channels[j].getMembers();
-                for (int k = 0; k < members.size(); k++)
-                {
-                    if (members[k].getNick() == sender.getNick())
-                        continue;
-                    reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receivers[i], message);
-                    send(members[k].getSocket(), reply.c_str(), reply.size(), 0);
-                }
+                reply = ERR_CANNOTSENDTOCHAN(serverIP, receiverchannel);
+                send(sender.getSocket(), reply.c_str(), reply.size(), 0);
+                return;
+            }
+            std::vector<user> members = channels[j].getMembers();
+            for (int k = 0; k < members.size(); k++)
+            {
+                if (members[k].getNick() == sender.getNick())
+                    continue;
+                reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receiverchannel, message);
+                send(members[k].getSocket(), reply.c_str(), reply.size(), 0);
             }
         }
+    }
+    if (channelExists == false)
+    {
+        reply = ERR_NOSUCHCHANNEL(serverIP, receiverchannel);
+        send(sender.getSocket(), reply.c_str(), reply.size(), 0);
     }
 }
 

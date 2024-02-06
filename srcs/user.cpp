@@ -6,6 +6,9 @@ user::user(std::string ipAddress, int socket)
     this->passwordCorrect = false;
     this->ipAddress = ipAddress;
     this->socket = socket;
+    this->Buffer = "";
+    this->nick = "";
+    this->userName = "";
 }
 
 user::~user()
@@ -49,9 +52,19 @@ user::userException::~userException() throw()
 
 void user::setUserName(std::string userName)
 {
-    // this->userName = userName;
-    // this->registered = true;
-    // std::cout << "Username changed to " << userName << std::endl;
+    if (this->userName == "")
+    {
+        std::cout << "Username set to " << userName << std::endl;
+        this->userName = userName;
+    }
+    else
+    {
+        std::cerr << "Username already set with " << this->userName << "and length " << this->userName.length() << std::endl;
+        std::string reply = ERR_ALREADYREGISTERED(nick, ipAddress);
+        send(socket, reply.c_str(), reply.size(), 0);
+        return;
+    }
+    std::cout << "Username changed to " << userName << std::endl;
 }
 
 
@@ -73,6 +86,12 @@ void user::setPassConfirmed(bool pass)
 
 void user::setNick(std::string nick, std::vector<user> users)
 {
+    bool firstSet = false;
+    std::string oldNick = this->nick;
+    if(this->nick == "")
+    {
+        firstSet = true;
+    }
     for (int i = 0; i < users.size(); i++)
     {
         if (users[i].getNick() == nick)
@@ -82,14 +101,22 @@ void user::setNick(std::string nick, std::vector<user> users)
     }
     this->nick = nick;
     this->registered = true;
-    std::string reply = RPL_WELCOME(this->getNick(), this->getIpAddress());
-    send(this->getSocket(), reply.c_str(), reply.size(), 0);
-    std::string reply2 = RPL_YOURHOST(this->getNick(), this->getIpAddress());
-    send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
-    std::string reply3 = RPL_CREATED(this->getNick(), this->getIpAddress());
-    send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
-    std::string reply4 = RPL_MYINFO(this->getNick(), this->getIpAddress());
-    send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+    if (firstSet)
+    {
+        std::string reply = RPL_WELCOME(this->getNick(), this->getIpAddress());
+        send(this->getSocket(), reply.c_str(), reply.size(), 0);
+        std::string reply2 = RPL_YOURHOST(this->getNick(), this->getIpAddress());
+        send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
+        std::string reply3 = RPL_CREATED(this->getNick(), this->getIpAddress());
+        send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
+        std::string reply4 = RPL_MYINFO(this->getNick(), this->getIpAddress());
+        send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+    }
+    else 
+    {
+        std::string reply = RPL_NICKCHANGE(oldNick, this->getNick(), this->getIpAddress());
+        send(this->getSocket(), reply.c_str(), reply.size(), 0);
+    }
 }   
 
 void user::setBuffer(std::string Buffer)

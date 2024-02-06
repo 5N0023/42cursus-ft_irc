@@ -26,6 +26,7 @@ class channel
         void setName(std::string name);
         std::string getName();
         void addMember(user member);
+        bool isMember(user member);
         // void removeMember(user member);
         // void addOperator(user op);
         // void removeOperator(user op);
