@@ -6,7 +6,7 @@
 #include <exception>
 #include "user.hpp"
 #include "channel.hpp"
-#include "utils.hpp"
+#include "replies.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -15,6 +15,7 @@
 #include <poll.h>
 #include <map>
 #include <fcntl.h>
+#include "utils.hpp"
 
 class user;
 class channel;

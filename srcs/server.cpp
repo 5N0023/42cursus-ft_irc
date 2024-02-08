@@ -177,8 +177,14 @@ void server::run()
                         {
                             try
                             {
-                                std::string pass = sBuffer.substr(5, sBuffer.size() - 1);
-                                if (pass != password)
+                                std::vector<std::string> args = splitCommand(sBuffer);
+                                if (args.size() < 2)
+                                {
+                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PASS");
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
+                                }
+                                if (args[1] != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
@@ -213,35 +219,47 @@ void server::run()
                         }
                         else if (sBuffer.substr(0, 4) == "NICK")
                         {
-                            std::cerr << "NICK command received" << std::endl;
-                            std::string nick = sBuffer.substr(5, sBuffer.size() - 1);
+                            std::vector<std::string> args = splitCommand(sBuffer);
+                            if (args.size() < 2)
+                            {
+                                std::string reply = ERR_NONICKNAMEGIVEN(clientIPs[fds[i].fd], serverIP);
+                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                continue;
+                            }
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
-                                    users[user].setNick(nick, users);
+                                    users[user].setNick(args[1], users);
                             }
                             catch (user::userException &e)
                             {
                                 std::cerr << "Error NICK: " << e.what() << "\n";
-                                std::string reply = ERR_NICKNAMEINUSE(nick, clientIPs[fds[i].fd]);
+                                std::string reply = ERR_NICKNAMEINUSE(args[1], clientIPs[fds[i].fd]);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
                         else if (sBuffer.substr(0, 4) == "USER")
                         {
-                            std::string userName = sBuffer.substr(5, sBuffer.size() - 1);
+                            std::cerr << "USER command : " << sBuffer << std::endl;
+                            std::vector<std::string> args = splitCommand(sBuffer);
+                            if (args.size() < 5)
+                            {
+                                std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "USER");
+                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                continue;
+                            }
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
-                                for (int i = 0; i < userName.size(); i++)
+                                for (int i = 0; i < args[1].size(); i++)
                                 {
-                                    if (userName[i] == ' ')
+                                    if (args[1][i] == ' ')
                                     {
-                                        userName = userName.substr(0, i);
+                                        args[1] = args[1].substr(0, i);
                                         break;
                                     }
                                 }
                                 if (user != -1)
-                                    users[user].setUserName(userName);
+                                    users[user].setUserName(args[1]);
                             }
                             catch (user::userException &e)
                             {
@@ -261,7 +279,6 @@ void server::run()
                                         break;
                                     }
                                 }
-                                std::cerr << "Channel name: |" << channelName << "|\n";
                                 channel newChannel(channelName);
                                 if (joinedUser != -1)
                                     this->addChannel(newChannel, users[joinedUser]);
