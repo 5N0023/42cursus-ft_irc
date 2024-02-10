@@ -13,7 +13,6 @@ user::user(std::string ipAddress, int socket)
 
 user::~user()
 {
-    // close(socket);
 }
 
 std::string user::getUserName()
@@ -88,9 +87,9 @@ void user::setNick(std::string nick, std::vector<user> users)
 {
     bool firstSet = false;
     std::string oldNick = this->nick;
-    if(this->nick == "")
+    if (nick == "bot")
     {
-        firstSet = true;
+        throw userException("Nick already in use");
     }
     for (int i = 0; i < users.size(); i++)
     {
@@ -98,6 +97,10 @@ void user::setNick(std::string nick, std::vector<user> users)
         {
             throw userException("Nick already in use");
         }
+    }
+    if(this->nick == "")
+    {
+        firstSet = true;
     }
     this->nick = nick;
     this->registered = true;

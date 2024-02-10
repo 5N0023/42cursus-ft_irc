@@ -108,7 +108,7 @@ void server::run()
                         try{
                             if (this->getUserBySocket(fds[i].fd) != -1)
                             {
-                            this->removeUser(users[this->getUserBySocket(fds[i].fd)]);
+                                this->removeUser(users[this->getUserBySocket(fds[i].fd)]);
                             }
                         }
                         catch (server::serverException &e)
@@ -129,6 +129,7 @@ void server::run()
 
                             try {
                                     this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
+                                    std::cout << "New user connected from " << clientIPs[fds[i].fd] << std::endl;
                                 }
                             catch (user::userException &e)
                                 {
@@ -155,6 +156,7 @@ void server::run()
                             sBuffer = sBuffer.substr(0, sBuffer.size() - 2);
                         else
                             sBuffer = sBuffer.substr(0, sBuffer.size() - 3);
+                        std::cerr << "sBuffer: " << sBuffer << std::endl;
                         try {
                             if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
                             {
@@ -184,6 +186,7 @@ void server::run()
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
+                                std::cerr << "args[1] which is password : " << args[1] << std::endl;
                                 if (args[1] != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
