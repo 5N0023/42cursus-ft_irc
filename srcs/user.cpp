@@ -87,10 +87,6 @@ void user::setNick(std::string nick, std::vector<user> users)
 {
     bool firstSet = false;
     std::string oldNick = this->nick;
-    if (nick == "bot")
-    {
-        throw userException("Nick already in use");
-    }
     for (int i = 0; i < users.size(); i++)
     {
         if (users[i].getNick() == nick)

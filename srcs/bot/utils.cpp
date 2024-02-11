@@ -104,13 +104,5 @@ std::vector<MatchInfo> getMatches() {
     std::string path = "https://api.football-data.org/v4/matches";
     std::string response = httpRequest("api.football-data.org", path);
     std::vector<MatchInfo> matches = extractMatchInfo(response);
-    for (int i = 0; i < matches.size(); i++) {
-        std::cout << "League: " << matches[i].league << std::endl;
-        std::cout << "Home Team: " << matches[i].homeTeam << std::endl;
-        std::cout << "Away Team: " << matches[i].awayTeam << std::endl;
-        std::cout << "Match Time: " << matches[i].matchTime << std::endl;
-        std::cout << std::endl;
-    }
-
     return matches;
 }

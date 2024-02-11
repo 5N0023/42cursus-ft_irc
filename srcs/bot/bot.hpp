@@ -1,20 +1,20 @@
 #pragma once
 
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include <exception>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <cstring>
-#include <poll.h>
-#include <map>
-#include <fcntl.h>
-#include "bot.hpp"
+#include <fcntl.h> // For setting socket non-blocking
+#include <iostream>
+#include <string>
 #include "utils.hpp"
+
+#define CONNECTION_PORT 6697
 
 class bot
 {
@@ -30,6 +30,7 @@ class bot
         bot(std::string server, int port, std::string nick, std::string user, std::string realname);
         ~bot();
         void connectToServer();
+        void listenToServerAndRespond();
         // void disconnectFromServer();
         // void sendToServer(std::string message);
         // void joinChannel(std::string channel);
