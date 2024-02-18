@@ -48,6 +48,5 @@ class user
                     userException(std::string message);
                     const char *what(void) const throw();
                     ~userException() throw();
-
             };
 };

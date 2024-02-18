@@ -29,7 +29,7 @@ std::string channel::getName()
 
 void channel::addMember(user member)
 {
-    for (int i = 0; i < members.size(); i++)
+    for (size_t i = 0; i < members.size(); i++)
     {
         if (members[i].getNick() == member.getNick())
         {
@@ -89,7 +89,7 @@ void channel::removeMember(user member)
 
 bool channel::isMember(user member)
 {
-    for (int i = 0; i < members.size(); i++)
+    for (size_t i = 0; i < members.size(); i++)
     {
         if (members[i].getNick() == member.getNick())
         {

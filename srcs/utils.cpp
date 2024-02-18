@@ -6,7 +6,7 @@ std::vector<std::string> splitCommand(std::string command)
 {
     std::vector<std::string> commandVec;
     std::string cmd;
-    for (int i = 0; i < command.length(); i++)
+    for (size_t i = 0; i < command.length(); i++)
     {
         if (command[i] == ' ')
         {
@@ -28,7 +28,7 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
     std::vector<std::string> keysVec;
     std::string chan;
     std::string key;
-    for (int i = 0; i < channels.length(); i++)
+    for (size_t i = 0; i < channels.length(); i++)
     {
         if (channels[i] == ',')
         {
@@ -41,7 +41,7 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
         }
     }
 
-    for (int i = 0; i < keys.length(); i++)
+    for (size_t i = 0; i < keys.length(); i++)
     {
         if (keys[i] == ',')
         {
@@ -53,7 +53,7 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
             key += keys[i];
         }
     }
-    for (int i = 0; i < chansVec.size(); i++)
+    for (size_t i = 0; i < chansVec.size(); i++)
     {
         if (i >= keysVec.size())
         {

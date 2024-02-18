@@ -1,7 +1,8 @@
 #include "server.hpp"
 
-server::server(int port, std::string password): port(port), password(password)
+server::server(int Port, std::string password): password(password)
 {
+    port = Port;
     listeningSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listeningSocket < 0)
     {
@@ -253,7 +254,7 @@ void server::run()
                             }
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
-                                for (int i = 0; i < args[1].size(); i++)
+                                for (size_t i = 0; i < args[1].size(); i++)
                                 {
                                     if (args[1][i] == ' ')
                                     {
@@ -274,7 +275,7 @@ void server::run()
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                for (int i = 0; i < channelName.size(); i++)
+                                for (size_t i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == '\n')
                                     {
@@ -298,7 +299,7 @@ void server::run()
                                 if (partUser == -1)
                                     throw serverException("User not found");
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                for (int i = 0; i < channelName.size(); i++)
+                                for (size_t i = 0; i < channelName.size(); i++)
                                 {
                                     if (channelName[i] == ' ' || channelName[i] == ',')
                                     {
@@ -306,7 +307,7 @@ void server::run()
                                         break;
                                     }
                                 }
-                                for (int i = 0; i < channels.size(); i++)
+                                for (size_t i = 0; i < channels.size(); i++)
                                 {
                                     if (channels[i].getName() == channelName)
                                     {
@@ -327,7 +328,7 @@ void server::run()
                         else if (sBuffer.substr(0, 7) == "PRIVMSG")
                         {
                             std::string receiver = sBuffer.substr(8, sBuffer.size() - 1);
-                            for (int i = 0; i < receiver.size(); i++)
+                            for (size_t i = 0; i < receiver.size(); i++)
                             {
                                 if (receiver[i] == ' ')
                                 {
@@ -338,7 +339,7 @@ void server::run()
                             std::string message = sBuffer.substr(8, sBuffer.size() - 1);
                             message = message.substr(receiver.size() + 1, message.size() - 1);
                             std::vector<std::string> receivers;
-                            for (int i = 0; i < receiver.size(); i++)
+                            for (size_t i = 0; i < receiver.size(); i++)
                             {
                                 if (receiver[i] == ',')
                                 {
@@ -359,7 +360,7 @@ void server::run()
                                 int sender = this->getUserBySocket(fds[i].fd);
                                 if (sender == -1)
                                     throw serverException("User not found");
-                                for (int i = 0; i < receivers.size(); i++)
+                                for (size_t i = 0; i < receivers.size(); i++)
                                 {
                                     if (receivers[i][0] == '#' || receivers[i][0] == '&')
                                         this->prvmsgchannel(users[sender], receivers[i], message);
@@ -379,7 +380,7 @@ void server::run()
                                 command = command.substr(0, command.size() - 2);
                             else
                                 command = command.substr(0, command.size() - 3);
-                            for (int i = 0; i < command.size(); i++)
+                            for (size_t i = 0; i < command.size(); i++)
                             {
                                 if (command[i] == ' ')
                                 {
@@ -511,7 +512,7 @@ void server::prvmsg(user sender, std::string receiver, std::string message)
     std::vector<user> users = this->getUsers();
     std::string reply;
     bool userExists = false;
-    for (int j = 0; j < users.size(); j++)
+    for (size_t j = 0; j < users.size(); j++)
     {
         if (users[j].getNick() == receiver)
         {
@@ -531,7 +532,7 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
 {
     std::string reply;
     bool channelExists = false;
-    for (int j = 0; j < channels.size(); j++)
+    for (size_t j = 0; j < channels.size(); j++)
     {
         if (channels[j].getName() == receiverchannel)
         {
@@ -543,7 +544,7 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
                 return;
             }
             std::vector<user> members = channels[j].getMembers();
-            for (int k = 0; k < members.size(); k++)
+            for (size_t k = 0; k < members.size(); k++)
             {
                 if (members[k].getNick() == sender.getNick())
                     continue;
