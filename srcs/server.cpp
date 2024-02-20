@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:22:46 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/20 12:27:52 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -309,10 +309,25 @@ void server::run()
                             std::cout << "<<"<<sBuffer<<">>" <<std::endl;
                             try {
                                 std::vector<std::string> vec =splitCommand(sBuffer);
-                                if (vec.size() <= 4)
+                                if (vec.size() < 4)
                                     throw channel::channelException(ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "KICK"));
-                                    
-                            std::cout << "<< test>>" <<std::endl;
+                                std::vector<channel>::iterator it=channels.begin();
+                                for (;it < channels.end();it++)
+                                {
+                                    if (it->getName() == vec[1])
+                                        {
+                                            std::vector<user>member= it->getMembers();
+                                            std::vector<user>::iterator iter = member.begin();
+                                            for (; iter < member.end();iter++)
+                                            {
+                                                
+                                            }
+                                        }
+                                        std::cout<<it->getName()<<std::endl;
+                                }
+                                if (it == channels.end())
+                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP,vec[1])); 
+                            std::cout << "<< test >>" <<std::endl;
                                     }
                             
                             catch (channel::channelException &e)
