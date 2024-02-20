@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 16:35:52 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/20 18:42:45 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -312,7 +312,7 @@ void server::run()
                                 // std::cout<<"size = "<<vec.size()<<" <<"<<std::endl;
                                 // for(size_t i=0;i<vec.size();i++)
                                 //     std::cout<<"'"<<vec[i]<<"'"<<std::endl;
-                                            int User = this->getUserBySocket(fds[i].fd);
+                                int User = this->getUserBySocket(fds[i].fd);
                                 if (vec.size() < 4)
                                     throw channel::channelException(ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "KICK"));
                                 std::vector<channel>::iterator it=channels.begin();
@@ -320,19 +320,32 @@ void server::run()
                                 {
                                     if (it->getName() == vec[1])
                                     {
-                                        std::vector<user>member= it->getMembers();
-                                        std::vector<user>::iterator iter = member.begin();
-                                        for (; iter < member.end();iter++)
+                                        if (it->isMember(users[User]))
                                         {
-                                            if (iter->getNick() == users[User].getNick())
-                                            {
-                                                
-                                                break;
-                                            }
-                                            std::cout<<iter->getNick()<<std::endl;
+                                          if (it->isoperator(users[User]))  
+                                          {
+                                            
+                                          }
+                                          else
+                                            throw channel::channelException(ERR_CHANOPRIVSNEEDED(it->getName()));
                                         }
-                                        if (iter == member.end())
+                                        else
                                             throw channel::channelException(ERR_NOTONCHANNEL(serverIP,it->getName()));
+                                            
+                                        // std::vector<user>member= it->getMembers();
+                                        // std::vector<user>::iterator iter = member.begin();
+                                        // for (; iter < member.end();iter++)
+                                        // {
+                                        //     if (iter->getNick() == users[User].getNick())
+                                        //     {
+                                        //         std::vector<user>member= it->getMembers();
+                                        //         std::vector<user>::iterator iter = member.begin();
+                                        //         for (; iter < member.end();iter++)
+                                        //         {}
+                                        //         break;
+                                        //     }
+                                        //     std::cout<<iter->getNick()<<std::endl;
+                                        // }
                                         break;
                                     }
                                 }
