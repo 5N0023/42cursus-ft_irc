@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:36 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:36 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/20 15:20:17 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include <map>
 #include <fcntl.h>
 #include "utils.hpp"
+#include <sstream> 
 
 class user;
 class channel;

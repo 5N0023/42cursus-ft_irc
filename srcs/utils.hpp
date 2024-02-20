@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:47 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:47 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/20 15:20:47 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,6 @@
 
 
 
-
+std::vector<std::string> split(const std::string& input, char delimiter);
 std::vector<std::string> splitCommand(std::string command);
 std::map<std::string, std::string> parseChannels(std::string channels,std::string keys);

@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:45 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/20 15:31:28 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,4 +74,18 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
         chans[chansVec[i]] = keysVec[i];
     }
     return chans;
+}
+
+std::vector<std::string> split(const std::string& input, char delimiter) {
+    std::vector<std::string> result;
+    std::istringstream stream(input);
+    std::string token;
+
+    while (std::getline(stream, token, delimiter)) {
+        
+        if (token [0] != '\0')
+            result.push_back(token);
+    }
+
+    return result;
 }
