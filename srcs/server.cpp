@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
+/*   Updated: 2024/02/20 11:22:46 by hznagui          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "server.hpp"
 
 server::server(int Port, std::string password): password(password)
@@ -294,11 +306,23 @@ void server::run()
                         }//my starting
                         else if (sBuffer.substr(0,4) == "KICK")
                         {
-                            std::cout << "test!!" <<std::endl;
-                            for (std::vector<user>::iterator it=users.begin();it < users.end();it++)
+                            std::cout << "<<"<<sBuffer<<">>" <<std::endl;
+                            try {
+                                std::vector<std::string> vec =splitCommand(sBuffer);
+                                if (vec.size() <= 4)
+                                    throw channel::channelException(ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "KICK"));
+                                    
+                            std::cout << "<< test>>" <<std::endl;
+                                    }
+                            
+                            catch (channel::channelException &e)
                             {
-                                    std::cout<< it->getNick()<<std::endl;
+                                std::cerr << "Error KICK: " << e.what() << "\n";
                             }
+                            // for (std::vector<user>::iterator it=.begin();it < users.end();it++)
+                            // {
+                            //         std::cout<< it->getNick()<<std::endl;
+                            // }
 
                         }    
                         //my ending 

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   replies.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/20 11:08:32 by hznagui           #+#    #+#             */
+/*   Updated: 2024/02/20 11:08:32 by hznagui          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #define RPL_WELCOME(nick, hostname) ":" + hostname + " 001 " + nick + " :Welcome " + nick + " to the ft_irc server !\r\n"
 #define RPL_YOURHOST(nick, hostname) ":" + hostname + " 002 " + nick + " :Your host is " + hostname + " running version 1.0 !\r\n"
 #define RPL_CREATED(nick, hostname) ":" + hostname + " 003 " + nick + " :This server was created by mlektaib && hznagui!\r\n"
