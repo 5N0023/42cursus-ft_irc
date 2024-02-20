@@ -291,7 +291,17 @@ void server::run()
                             {
                                 std::cerr << "Error JOIN: " << e.what() << "\n";
                             }
-                        }
+                        }//my starting
+                        else if (sBuffer.substr(0,4) == "KICK")
+                        {
+                            std::cout << "test!!" <<std::endl;
+                            for (std::vector<user>::iterator it=users.begin();it < users.end();it++)
+                            {
+                                    std::cout<< it->getNick()<<std::endl;
+                            }
+
+                        }    
+                        //my ending 
                         else if (sBuffer.substr(0, 4) == "PART")
                         {
                             try {
