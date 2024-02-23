@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:32 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 18:42:12 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/23 10:44:02 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,4 +76,4 @@
 #define RPL_KICK(kicker, username, host, channel, targetuser, reason) ":" + kicker + "!" + username + "@" + host + " KICK " + channel + " " + targetuser + " :" + reason + "\r\n"
 #define PRIVMSG_FORMAT(senderNick, senderUsername, senderHostname, receiver, message) ":" + senderNick + "!~" + senderUsername + "@" + senderHostname + " PRIVMSG " + receiver + " :" + message + "\r\n"
 #define ERR_UNKNOWNCOMMAND(nick, hostname, command) ":" + hostname + " 421 " + nick + " " + command + " :Unknown command\r\n"
-#define ERR_CHANOPRIVSNEEDED(channel)  channel + ":You're not channel operator\r\n"
+#define ERR_CHANOPRIVSNEEDED(hostname,channel)  ":" + hostname + " 482 " + channel + " :You're not channel operator\r\n"

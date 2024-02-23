@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 18:42:45 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/23 10:40:05 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,7 +260,7 @@ void server::run()
                             std::vector<std::string> args = splitCommand(sBuffer);
                             if (args.size() < 5)
                             {
-                                std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "USER");
+                                std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP,"USER");
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 continue;
                             }
@@ -303,18 +303,34 @@ void server::run()
                             {
                                 std::cerr << "Error JOIN: " << e.what() << "\n";
                             }
-                        }//my starting
+                        }
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        //my starting
                         else if (sBuffer.substr(0,4) == "KICK")
                         {
-                            std::cout << "<<"<<sBuffer<<">>" <<std::endl;
+                                int User = this->getUserBySocket(fds[i].fd);
+                            // std::cout << "<<"<<sBuffer<<">>" <<std::endl;
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 // std::cout<<"size = "<<vec.size()<<" <<"<<std::endl;
                                 // for(size_t i=0;i<vec.size();i++)
                                 //     std::cout<<"'"<<vec[i]<<"'"<<std::endl;
-                                int User = this->getUserBySocket(fds[i].fd);
                                 if (vec.size() < 4)
-                                    throw channel::channelException(ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "KICK"));
+                                {
+                                //    std::cerr << users[User].getNick()<<std::endl;
+                                   throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"KICK")));
+                                }
                                 std::vector<channel>::iterator it=channels.begin();
                                 for (;it < channels.end();it++)
                                 {
@@ -322,41 +338,29 @@ void server::run()
                                     {
                                         if (it->isMember(users[User]))
                                         {
-                                          if (it->isoperator(users[User]))  
-                                          {
-                                            
-                                          }
-                                          else
-                                            throw channel::channelException(ERR_CHANOPRIVSNEEDED(it->getName()));
+                                            if (it->isoperator(users[User]))  
+                                            {
+                                                it->removeMember(it->isMemberstr(vec[2]));
+                                            }
+                                            else
+                                                throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,it->getName()));
                                         }
                                         else
                                             throw channel::channelException(ERR_NOTONCHANNEL(serverIP,it->getName()));
-                                            
-                                        // std::vector<user>member= it->getMembers();
-                                        // std::vector<user>::iterator iter = member.begin();
-                                        // for (; iter < member.end();iter++)
-                                        // {
-                                        //     if (iter->getNick() == users[User].getNick())
-                                        //     {
-                                        //         std::vector<user>member= it->getMembers();
-                                        //         std::vector<user>::iterator iter = member.begin();
-                                        //         for (; iter < member.end();iter++)
-                                        //         {}
-                                        //         break;
-                                        //     }
-                                        //     std::cout<<iter->getNick()<<std::endl;
-                                        // }
+                            
                                         break;
                                     }
                                 }
                                 if (it == channels.end())
-                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP,vec[1])); 
-                            // std::cout << "<< test >>" <<std::endl;
+                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1]));//khesni ne3raf channel li jani mena msg 
+
                                     }
                             
                             catch (channel::channelException &e)
                             {
-                                std::cerr << "Error KICK: " << e.what() << "\n";
+                                std::string replay= e.what();
+                                if (send(fds[i].fd, replay.c_str(), replay.size(), 0)==-1)
+                                    std::cerr<<"makhedmexi"<<std::endl;
                             }
                             // for (std::vector<user>::iterator it=.begin();it < users.end();it++)
                             // {
@@ -628,7 +632,7 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
     }
     if (channelExists == false)
     {
-        reply = ERR_NOSUCHCHANNEL(serverIP, receiverchannel);
+        reply = ERR_NOSUCHCHANNEL(serverIP,receiverchannel);
         send(sender.getSocket(), reply.c_str(), reply.size(), 0);
     }
 }

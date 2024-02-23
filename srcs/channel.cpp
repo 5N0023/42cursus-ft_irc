@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 18:35:02 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/23 10:45:18 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ channel::channelException::~channelException() throw()
 
 void channel::removeMember(user member)
 {
+    if (member.getSocket() == -1 && member.getIpAddress() == "error")
+        return;
     int membersSize = members.size();
     for (int i = 0; i < membersSize; i++)
     {
@@ -110,6 +112,17 @@ bool channel::isMember(user member)
     }
     return false;
 }
+user channel::isMemberstr(std::string member)
+{
+    for (size_t i = 0; i < members.size(); i++)
+    {
+        if (members[i].getNick() == member)
+        {
+            return members[i];
+        }
+    }
+    return user("error",-1);
+}
 bool channel::isoperator(user operat)
 {
     for (size_t i = 0; i < operators.size(); i++)
@@ -117,5 +130,6 @@ bool channel::isoperator(user operat)
         if (operators[i].getNick() == operat.getNick())
             return true;
     }
+   
     return false;
 }
