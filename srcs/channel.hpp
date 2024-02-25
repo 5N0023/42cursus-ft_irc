@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/23 10:08:33 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/25 10:12:38 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class channel
         void setName(std::string name);
         std::string getName();
         void addMember(user);
+        void addOperator(user);
         bool isMember(user);
         user isMemberstr(std::string);
         bool isoperator(user);

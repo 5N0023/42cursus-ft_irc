@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/23 10:45:18 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/25 10:15:07 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,15 @@ void channel::addMember(user member)
         }
     }
     members.push_back(member);
+}
+void channel::addOperator(user member)
+{
+    for (size_t i = 0; i < operators.size(); i++)
+    {
+        if (members[i].getNick() == member.getNick())
+            return;
+    }
+    operators.push_back(member);
 }
 
 void channel::setKey(std::string key)
