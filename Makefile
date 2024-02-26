@@ -6,14 +6,14 @@
 #    By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/18 10:34:59 by hznagui           #+#    #+#              #
-#    Updated: 2024/02/18 11:29:13 by hznagui          ###   ########.fr        #
+#    Updated: 2024/02/25 18:00:11 by hznagui          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
 NAME = ircserv
 
-FLAGS = -Wall -Wextra -Werror #-fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror -fsanitize=address -g
 
 FILE = 	./srcs/main.cpp\
 		./srcs/channel.cpp\

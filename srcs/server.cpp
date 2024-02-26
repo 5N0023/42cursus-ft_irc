@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/25 11:20:13 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/26 17:42:28 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,8 @@ void server::run()
                                 }
                         }
                         std::string sBuffer = std::string(buffer, bytesRead);
-                        if (sBuffer.find('\n') == std::string::npos)
+                        std::cerr << "asdsd :: " << sBuffer << ":::" << std::endl;
+                         if (sBuffer.find('\n') == std::string::npos)
                         {
                             if (this->getUserBySocket(fds[i].fd) != -1)
                                 users[this->getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
@@ -335,7 +336,7 @@ void server::run()
 //                                channels[5].removeMember
                                 size_t it = 0;
                                 std::cout<<"sender --->"<<users[User].getNick() <<std::endl;
-                                for ( ;it <= channels.size();it++)
+                                for ( ;it < channels.size();it++)
                                 {
                                     if (channels[it].getName() == vec[1])
                                     {
@@ -343,7 +344,8 @@ void server::run()
                                         {
                                             if (channels[it].isoperator(users[User]))  
                                             {
-                                                channels[it].removeMember(channels[it].isMemberstr(vec[2]));
+                                                channels[it].removeMember(channels[it].isMemberstr(vec[2]),0);
+                                                // std::string reply = ;
                                             }
                                             else
                                                 throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));
@@ -353,12 +355,13 @@ void server::run()
                                         break;
                                     }
                                 }
-                                if (it > channels.size())
-                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1]));//khesni ne3raf channel li jani mena msg 
+                                if (it == channels.size())
+                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1],users[User].getNick()));//khesni ne3raf channel li jani mena msg 
+                                }
                             catch (channel::channelException &e)
                             {
                                 std::string replay= e.what();
-                                send(fds[i].fd, replay.c_str(), replay.size(), 0)}
+                                send(fds[i].fd, replay.c_str(), replay.size(), 0);}
                         }    
                         //my ending 
                         else if (sBuffer.substr(0, 4) == "PART")
@@ -380,7 +383,7 @@ void server::run()
                                 {
                                     if (channels[i].getName() == channelName)
                                     {
-                                        this->channels[i].removeMember(users[partUser]);
+                                        this->channels[i].removeMember(users[partUser],1);
                                         if (channels[i].getMembers().size() == 0)
                                         {
                                             this->removeChannel(channels[i]);
@@ -625,7 +628,7 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
     }
     if (channelExists == false)
     {
-        reply = ERR_NOSUCHCHANNEL(serverIP,receiverchannel);
+        reply = ERR_NOSUCHCHANNEL(serverIP,receiverchannel,sender.getNick());
         send(sender.getSocket(), reply.c_str(), reply.size(), 0);
     }
 }
@@ -643,3 +646,11 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
      }
     throw serverException("Channel not found");
  }
+ 
+
+
+
+
+
+//  :*.freenode.net 403 hoho DSAD :No such channel
+//  <hostname>   403 <nick> <channel> :No such channel

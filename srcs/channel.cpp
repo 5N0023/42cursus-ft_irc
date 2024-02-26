@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/25 10:15:07 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/26 17:42:06 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ channel::channelException::~channelException() throw()
 {
 }
 
-void channel::removeMember(user member)
+void channel::removeMember(user member,int index)
 {
     if (member.getSocket() == -1 && member.getIpAddress() == "error")
         return;
@@ -101,9 +101,10 @@ void channel::removeMember(user member)
     {
         if (members[i].getSocket() == member.getSocket())
         {
-            std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
+            if (index == 1)
+                {std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
+                send(member.getSocket(), reply.c_str(), reply.size(), 0);}
             members.erase(members.begin() + i);
-            send(member.getSocket(), reply.c_str(), reply.size(), 0);
             return;
         }
     }

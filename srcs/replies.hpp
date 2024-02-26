@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:32 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/23 15:01:45 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/25 18:13:09 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,8 @@
 #define RPL_INVITING(hostname, inviting, invited, channel) ":" + hostname + " 341 " + inviting + " " + invited + " " + channel + " :Inviting " + invited + " to " + channel + "\r\n"
 #define RPL_INVITE(nick, username, clienthostname, invited, channel) ":" + nick + "!" + username + "@" + clienthostname + " INVITE " + invited + " :" + channel + "\r\n"
 #define ERR_NOTONCHANNEL(hostname, channel) ":" + hostname + " 442 " + channel + " " + ":You're not on that channel\r\n"
-#define ERR_NOSUCHNICK(hostname, nick) ":" + hostname + " 401 " + nick + " :No such nick\r\n"
-#define ERR_NOSUCHCHANNEL(hostname, channel) ":" + hostname + " 403 " + channel + " :No such channel\r\n"
+#define ERR_NOSUCHNICK(hostname, nick) ":" + hostname + " 401 " + nick +" :No such nick\r\n"
+#define ERR_NOSUCHCHANNEL(hostname, channel,nick) ":" + hostname + " 403 " + nick + channel + " " + ":No such channel\r\n"// 
 #define ERR_CANNOTSENDTOCHAN(hostname, channel) ":" + hostname + " 404 " + channel + " :Cannot send to channel\r\n"
 #define ERR_USERONCHANNEL(hostname, channel, nick) ":" + hostname + " 443 " + nick + " " + channel + "  :is already on channel\r\n"
 

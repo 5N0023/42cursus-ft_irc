@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/25 10:12:38 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/26 17:42:02 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class channel
         // void removeOperator(user op);
         void setKey(std::string key);
         std::string getKey();
-        void removeMember(user member);
+        void removeMember(user member,int);
         // void setTopic(std::string topic);
         // std::string getTopic();
         std::vector<user> &getMembers();
