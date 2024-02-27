@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/27 12:43:31 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/27 13:16:09 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -353,7 +353,7 @@ void server::run()
                                                 else 
                                                 {
                                                     
-                                                    std::string reply = RPL_KICK(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]," ");
+                                                    std::string reply = RPL_KICK(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2],getreason(vec,3));
                                                     std::vector<user>tmpusers = channels[it].getMembers();
                                                     for (size_t s = 0;s < tmpusers.size();s++)
                                                         send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);

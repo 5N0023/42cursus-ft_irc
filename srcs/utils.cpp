@@ -6,13 +6,21 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 15:31:28 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/27 13:23:01 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
 
+std::string getreason(std::vector<std::string> vector ,int begin)
+{
+    std::string str="";
+    vector[begin]=vector[begin].substr(1);
+    for(size_t i=begin;i<vector.size();i++)
+        str += vector[i]+" ";
+    return str;
+}
 
 std::vector<std::string> splitCommand(std::string command)
 {

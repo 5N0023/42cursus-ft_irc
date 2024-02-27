@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:36 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 15:20:17 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/27 13:12:14 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ class server
     public:
         server(int port, std::string password);
         ~server();
-
         void run();
         void stop();
         void addUser(user newUser);
