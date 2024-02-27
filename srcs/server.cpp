@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/26 17:42:28 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/27 12:43:31 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void server::run()
                                 }
                         }
                         std::string sBuffer = std::string(buffer, bytesRead);
-                        std::cerr << "asdsd :: " << sBuffer << ":::" << std::endl;
+                        // std::cerr << "asdsd :: " << sBuffer << ":::" << std::endl;
                          if (sBuffer.find('\n') == std::string::npos)
                         {
                             if (this->getUserBySocket(fds[i].fd) != -1)
@@ -335,7 +335,7 @@ void server::run()
                                 // std::vector<channel>::iterator it=channels.begin();
 //                                channels[5].removeMember
                                 size_t it = 0;
-                                std::cout<<"sender --->"<<users[User].getNick() <<std::endl;
+                                // std::cout<<"sender --->"<<users[User].getNick() <<std::endl;
                                 for ( ;it < channels.size();it++)
                                 {
                                     if (channels[it].getName() == vec[1])
@@ -344,8 +344,22 @@ void server::run()
                                         {
                                             if (channels[it].isoperator(users[User]))  
                                             {
-                                                channels[it].removeMember(channels[it].isMemberstr(vec[2]),0);
-                                                // std::string reply = ;
+                                                user tmp = channels[it].isMemberstr(vec[2]);
+                                                if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                    {
+                                                        // std::cerr << "ha howa dkhalll-1"<<std::endl;
+                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP,vec[2]));
+                                                    }
+                                                else 
+                                                {
+                                                    
+                                                    std::string reply = RPL_KICK(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]," ");
+                                                    std::vector<user>tmpusers = channels[it].getMembers();
+                                                    for (size_t s = 0;s < tmpusers.size();s++)
+                                                        send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
+                                                    channels[it].removeMember(tmp,0);
+                                                    
+                                                }
                                             }
                                             else
                                                 throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));
@@ -360,6 +374,7 @@ void server::run()
                                 }
                             catch (channel::channelException &e)
                             {
+                                // std::cerr << "ha howa dkhalll0"<<std::endl;
                                 std::string replay= e.what();
                                 send(fds[i].fd, replay.c_str(), replay.size(), 0);}
                         }    
@@ -648,9 +663,13 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
  }
  
 
-
-
-
+/*NICK tamago2
+USER tamago2 0 * tamago2
+PONG */
 
 //  :*.freenode.net 403 hoho DSAD :No such channel
 //  <hostname>   403 <nick> <channel> :No such channel
+
+//:tamago!~tamago@freenode-obu.d75.6g0qj4.IP KICK #hoho22 tamago2 :tamago
+
+//<hostname> <channel> <kicked> <kicker>
