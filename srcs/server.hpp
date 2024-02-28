@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:36 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/27 13:12:14 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/28 14:20:40 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ class server
         void stop();
         void addUser(user newUser);
         void removeUser(user user);
-        void addChannel(channel newChannel, user user);
+        
+        void addChannel(channel newChannel, user user,int index = 1);
         void removeChannel(channel channel);
         void prvmsg(user sender, std::string receiver, std::string message);
         void prvmsgchannel(user sender, std::string channel, std::string message);

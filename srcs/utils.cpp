@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/27 13:23:01 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/28 15:16:03 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,17 @@ std::string getreason(std::vector<std::string> vector ,int begin)
         str += vector[i]+" ";
     return str;
 }
-
+user getUser_str(std::string member,std::vector<user> members)
+{
+    for (size_t i = 0; i < members.size(); i++)
+    {
+        if (members[i].getNick() == member)
+        {
+            return members[i];
+        }
+    }
+    return user("error",-1);
+}
 std::vector<std::string> splitCommand(std::string command)
 {
     std::vector<std::string> commandVec;
@@ -90,7 +100,6 @@ std::vector<std::string> split(const std::string& input, char delimiter) {
     std::string token;
 
     while (std::getline(stream, token, delimiter)) {
-        
         if (token [0] != '\0')
             result.push_back(token);
     }

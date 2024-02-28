@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/26 17:42:06 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/28 11:25:20 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,17 +122,7 @@ bool channel::isMember(user member)
     }
     return false;
 }
-user channel::isMemberstr(std::string member)
-{
-    for (size_t i = 0; i < members.size(); i++)
-    {
-        if (members[i].getNick() == member)
-        {
-            return members[i];
-        }
-    }
-    return user("error",-1);
-}
+
 bool channel::isoperator(user operat)
 {
     for (size_t i = 0; i < operators.size(); i++)

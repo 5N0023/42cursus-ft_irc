@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/27 16:44:24 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/28 15:17:52 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ server::server(int Port, std::string password): password(password)
         throw serverException("Error listening on socket\n");
     }
 }
-
 server::~server()
 {
     close(listeningSocket);
@@ -318,10 +317,69 @@ void server::run()
                         
                         
                         //my starting
+                        else if (sBuffer.substr(0,6) == "INVITE")
+                        {
+                            int User = this->getUserBySocket(fds[i].fd);
+                            // std::cout << "<<"<<sBuffer<<">>" <<std::endl;
+                            try {
+                                std::vector<std::string> vec = split(sBuffer,' ');
+                            // std::cerr << "<<"<<vec.size()<<">>" <<std::endl;
+                                if (vec.size() < 3)
+                                   throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"INVITE")));
+                                if(vec[2][0]==':') 
+                                    vec[2]=vec[2].substr(1);
+                                size_t it = 0;
+                                    for ( ;it < channels.size();it++)
+                                    {
+                                        if (channels[it].getName() == vec[2])
+                                        {
+                                            if (channels[it].isMember(users[User]))
+                                            {
+                                                if (channels[it].isoperator(users[User]))  
+                                                {
+                                                    user tmp1 = getUser_str(vec[1], users);
+                                                    if (tmp1.getSocket() == -1 && tmp1.getIpAddress() == "error")
+                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP,vec[1]));
+                                                    else
+                                                    {
+                                                        user tmp = getUser_str(vec[1], channels[it].getMembers());
+                                                        if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                        {
+                                                            std::string reply = RPL_INVITE(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]);
+                                                            // channel newChannel(vec[1]);
+                                                            addChannel(channels[it],tmp1,0);
+                                                            std::vector<user> tmpusers = channels[it].getMembers();
+                                                            for (size_t s = 0 ; s < tmpusers.size() ; s++)
+                                                                send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
+                                                        }
+                                                        else
+                                                            throw channel::channelException(ERR_USERONCHANNEL(serverIP,vec[2],vec[1]));
+                                                    }
+                                                }
+                                                else
+                                                    throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));
+                                            }
+                                            else
+                                                throw channel::channelException(ERR_NOTONCHANNEL(serverIP,channels[it].getName()));
+                                            break;
+                                        }
+                                    }
+                                        if (it == channels.size())
+                                            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[2],users[User].getNick()));//khesni ne3raf channel li jani mena msg
+                                }
+                    
+                                
+                            catch (channel::channelException &e)
+                            {
+                                std::string replay= e.what();
+                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                            }
+                        }
+                        
                         else if (sBuffer.substr(0,4) == "KICK")
                         {
-                                int User = this->getUserBySocket(fds[i].fd);
-                            std::cout << "<<"<<sBuffer<<">>" <<std::endl;
+                            int User = this->getUserBySocket(fds[i].fd);
+                            // std::cout << "<<"<<sBuffer<<">>" <<std::endl;
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 4)
@@ -343,7 +401,7 @@ void server::run()
                                                         for (size_t x = 0;x<target.size();x++)
                                                         {
                                                             try{ 
-                                                                user tmp = channels[it].isMemberstr(target[x]);
+                                                                user tmp = getUser_str(target[x],channels[it].getMembers());
                                                                 if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                                         throw channel::channelException(ERR_NOSUCHNICK(serverIP,target[x]));
                                                                 else 
@@ -533,7 +591,7 @@ void server::removeUser(user user)
 }
 
 
-void server::addChannel(channel newChannel, user user)
+void server::addChannel(channel newChannel, user user,int index)
 {
     bool channelExists = false;
     if (newChannel.getName()[0] != '#')
@@ -547,8 +605,9 @@ void server::addChannel(channel newChannel, user user)
     {
         if (channels[i].getName() == newChannel.getName())
         {
-            std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
-            send(user.getSocket(), reply.c_str(), reply.size(), 0);
+            if (index == 1)
+                {std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
+                send(user.getSocket(), reply.c_str(), reply.size(), 0);}
             channelExists = true;
             channels[i].addMember(user);
             break;
