@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/28 15:17:52 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/02/28 15:38:16 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,10 +320,8 @@ void server::run()
                         else if (sBuffer.substr(0,6) == "INVITE")
                         {
                             int User = this->getUserBySocket(fds[i].fd);
-                            // std::cout << "<<"<<sBuffer<<">>" <<std::endl;
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
-                            // std::cerr << "<<"<<vec.size()<<">>" <<std::endl;
                                 if (vec.size() < 3)
                                    throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"INVITE")));
                                 if(vec[2][0]==':') 
@@ -346,11 +344,8 @@ void server::run()
                                                         if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                         {
                                                             std::string reply = RPL_INVITE(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]);
-                                                            // channel newChannel(vec[1]);
-                                                            addChannel(channels[it],tmp1,0);
-                                                            std::vector<user> tmpusers = channels[it].getMembers();
-                                                            for (size_t s = 0 ; s < tmpusers.size() ; s++)
-                                                                send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
+                                                            addChannel(channels[it],tmp1,1);
+                                                                send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
                                                         }
                                                         else
                                                             throw channel::channelException(ERR_USERONCHANNEL(serverIP,vec[2],vec[1]));
