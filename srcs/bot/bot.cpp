@@ -26,7 +26,6 @@ bot::bot(std::string server, int serverPort, std::string nick, std::string user,
 void bot::connectToServer()
 {
     struct sockaddr_in server_address;
-    char receive_buffer[100];
     if (socket < 0)
     {
         perror("Socket creation failed");
@@ -80,7 +79,7 @@ void bot::listenToServerAndRespond()
                 std::string banner = "PRIVMSG " + sender + " " + "----------------------------------------------------------------------------------------------- " + "\r\n";
                 send(socket, banner.c_str(), banner.size(), 0);
                 usleep(50);
-                for (int i = 0; i < matches.size(); i++)
+                for (size_t i = 0; i < matches.size(); i++)
                 {
                     
                     std::string reply = "PRIVMSG " + sender + " | " + matches[i].matchTime.substr(11, 5) + " | -> "+ matches[i].league + " : | " + matches[i].homeTeam + " | vs | " + matches[i].awayTeam + " | " + "\r\n";

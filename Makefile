@@ -11,9 +11,10 @@
 # **************************************************************************** #
 
 
-NAME = ircserv
+NAME = server
+BOTNAME = bot
 
-FLAGS = -Wall -Wextra -Werror -fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror  -std=c++98 -fsanitize=address -g
 
 FILE = 	./srcs/main.cpp\
 		./srcs/channel.cpp\
@@ -21,27 +22,37 @@ FILE = 	./srcs/main.cpp\
 		./srcs/utils.cpp\
 		./srcs/server.cpp\
 		
+BOTFILES = ./srcs/bot/bot.cpp\
+		./srcs/bot/main.cpp\
+		./srcs/bot/utils.cpp
 
 HEADER = ./srcs/channel.hpp\
 		./srcs/user.hpp\
 		./srcs/utils.hpp\
 		./srcs/replies.hpp\
 		./srcs/server.hpp\
-		
+
+BOTHEADER = ./srcs/bot/bot.hpp\
+		./srcs/bot/utils.hpp
+
 OBJ_FILE = $(FILE:.cpp=.o)
 
 COLOUR_GREEN=\033[1;32m
 
 COLOUR_RED=\033[1;31m
 
-all : $(NAME)
+all : $(NAME) $(BOTNAME)
+
+$(BOTNAME) : $(BOTFILES) $(BOTHEADER)
+	@c++  $(FLAGS) $(BOTFILES) -o $(BOTNAME)
+	@echo "$(COLOUR_GREEN)--->[bonus part successfully created ✅]<---"
 
 $(NAME) : $(OBJ_FILE) 	$(HEADER) 
-	@c++ -std=c++98 $(FLAGS) $(FILE) -o $(NAME)
+	@c++  $(FLAGS) $(FILE) -o $(NAME)
 	@echo "$(COLOUR_GREEN)--->[mandatory part successfully created ✅]<---"
 	
 %.o: %.cpp 	$(HEADER) 
-	@c++ -std=c++98 $(FLAGS) -c $< -o $@
+	@c++  $(FLAGS) -c $< -o $@
 	
 clean :
 	@rm -rf $(OBJ_FILE)
@@ -54,9 +65,6 @@ fclean: clean
 
 re : fclean all
 
-# default:
-# 	c++ ./srcs/*.cpp -o server
-# 	c++ ./srcs/bot/*.cpp -o bot
-
-# run:
-# 	./server 6697 password
+run:
+	./server 6697 password &
+	./bot 6697 password &
