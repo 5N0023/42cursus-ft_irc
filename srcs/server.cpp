@@ -434,7 +434,7 @@ void server::run()
                                 }
                                 }
                             catch (channel::channelException &e)
-                            {
+                           {
                                 std::string replay= e.what();
                                 send(fds[i].fd, replay.c_str(), replay.size(), 0);
                             }
@@ -484,7 +484,7 @@ void server::run()
                                 }
                             std::string receiver = args[1];
                             std::string message;
-                            message = args[2];
+                            message = sBuffer.substr(sBuffer.find(args[2]), sBuffer.size() - sBuffer.find(args[2]));
                             std::cerr << "message: " << message << "|" << std::endl;
                             std::vector<std::string> receivers;
                             for (size_t i = 0; i < receiver.size(); i++)
