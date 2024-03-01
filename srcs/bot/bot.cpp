@@ -85,7 +85,6 @@ void bot::listenToServerAndRespond()
             if (message.find("PRIVMSG") != std::string::npos)
             {
                 std::string sender = message.substr(1, message.find("!") - 1);
-                usleep(500);
                 if (matches.size() == 0)
                 {
                      std::string reply = "PRIVMSG " + sender + " | NO matches for today | \r\n";
@@ -93,16 +92,18 @@ void bot::listenToServerAndRespond()
                      continue;
                 }
                 std::string msg = message.substr(message.find(" :") + 2, message.length() - message.find(" :") - 2);
-                std::string banner = "PRIVMSG " + sender + " " + "----------------------------------------------------------------------------------------------- " + "\r\n";
-                send(socket, banner.c_str(), banner.size(), 0);
                 for (size_t i = 0; i < matches.size(); i++)
                 {
-                    
+                    if (matches[i].awayTeam.size() == 0 || matches[i].homeTeam.size() == 0 || matches[i].league.size() == 0 || matches[i].matchTime.size() == 0)
+                        continue;
+                    std::string banner = "PRIVMSG " + sender + " " + "----------------------------------------------------------------------------------------------- " + "\r\n";
+                    send(socket, banner.c_str(), banner.size(), 0);
+                    usleep(500);
                     std::string reply = "PRIVMSG " + sender + " | " + matches[i].matchTime.substr(11, 5) + " | -> "+ matches[i].league + " : | " + matches[i].homeTeam + " | vs | " + matches[i].awayTeam + " | " + "\r\n";
                     send(socket, reply.c_str(), reply.size(), 0);
                     usleep(500);
-                    send(socket, banner.c_str(), banner.size(), 0);
-                    usleep(500);
+                    if (i == matches.size() - 1)
+                        send(socket, banner.c_str(), banner.size(), 0);
                 }
             }
         }

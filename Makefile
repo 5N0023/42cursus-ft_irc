@@ -70,6 +70,9 @@ fclean: clean
 re : fclean all
 
 run:
-	./server $(PORT) $(PASSWORD) &
-# sleep 1
-	./bot $(SERVERIP) $(PORT) $(PASSWORD) &
+	./server $(PORT) $(PASSWORD) >> log.txt 2>&1 &
+	sleep 1
+	./bot $(SERVERIP) $(PORT) $(PASSWORD) &> botlog.txt 2>&1 &
+
+kill:
+	kill $(shell pgrep server)

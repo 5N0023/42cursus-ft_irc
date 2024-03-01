@@ -67,6 +67,7 @@ std::string httpRequest(const std::string& host, const std::string& path) {
     struct hostent *server = gethostbyname(host.c_str());
     if (server == nullptr) {
         std::cerr << "ERROR, no such host" << std::endl;
+        close(sockfd);
         return "";
     }
 
@@ -79,12 +80,14 @@ std::string httpRequest(const std::string& host, const std::string& path) {
 
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         std::cerr << "ERROR connecting" << std::endl;
+        close(sockfd);
         return "";
     }
 
     // Send request
     if (write(sockfd, request.c_str(), request.length()) < 0) {
         std::cerr << "ERROR writing to socket" << std::endl;
+        close(sockfd);
         return "";
     }
 
@@ -95,6 +98,7 @@ std::string httpRequest(const std::string& host, const std::string& path) {
         int bytes_read = read(sockfd, buffer, 4095);
         if (bytes_read < 0) {
             std::cerr << "ERROR reading response from socket" << std::endl;
+            close(sockfd);
             return "";
         }
         if (bytes_read == 0)
