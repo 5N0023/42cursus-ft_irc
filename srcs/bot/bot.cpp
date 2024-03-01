@@ -22,7 +22,7 @@ bot::bot(std::string server, int serverPort, std::string nick, std::string user,
     this->realname = realname;
     socket = ::socket(AF_INET, SOCK_STREAM, 0);
 
-    // matches = getMatches();
+    matches = getMatches();
 
 }
 
