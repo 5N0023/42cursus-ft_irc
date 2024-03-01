@@ -32,6 +32,7 @@ class bot
 {
     private:
         std::string server;
+        std::string serverPassword;
         int serverPort;
         std::string nick;
         std::string user;
@@ -39,7 +40,8 @@ class bot
         std::vector<MatchInfo> matches;
         int socket;
     public:
-        bot(std::string server, int port, std::string nick, std::string user, std::string realname);
+        bot(std::string server, int serverPort, std::string nick, std::string user, std::string realname,std::string serverPassword);
+
         ~bot();
         void connectToServer();
         void listenToServerAndRespond();
@@ -60,4 +62,14 @@ class bot
         //         ~botException() throw();
 
         // };
+
+        class botException : public std::exception
+        {
+            private:
+                std::string message;
+            public:
+                botException(std::string message);
+                const char *what(void) const throw();
+                ~botException() throw();
+        };
 };

@@ -14,6 +14,10 @@
 NAME = server
 BOTNAME = bot
 
+SERVERIP = "127.0.0.1"
+PORT = 6697
+PASSWORD = "password"
+
 FLAGS = -Wall -Wextra -Werror  -std=c++98 -fsanitize=address -g
 
 FILE = 	./srcs/main.cpp\
@@ -59,12 +63,13 @@ clean :
 	@echo "$(COLOUR_RED)--->[obj file deleted successfully ✅]<---"
 
 fclean: clean
-	@rm -f $(NAME)
+	@rm -f $(NAME) $(BOTNAME)
 	@echo "$(COLOUR_RED)--->[program deleted successfully ✅]<---"
 
 
 re : fclean all
 
 run:
-	./server 6697 password &
-	./bot 6697 password &
+	./server $(PORT) $(PASSWORD) 
+# sleep 1
+# ./bot $(SERVERIP) $(PORT) $(PASSWORD) &

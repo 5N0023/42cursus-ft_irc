@@ -46,7 +46,6 @@ std::vector<MatchInfo> extractMatchInfo(const std::string& jsonResponse) {
             break;
         }
     }
-
     return matches;
 }
 

@@ -12,9 +12,19 @@
 
 
 #include "bot.hpp"
-int main()
+int main(int argc, char *argv[])
 {
-    bot bot("127.0.0.1", 6697, "bot", "bot", "bot");
-    bot.connectToServer();
-    bot.listenToServerAndRespond();
+    if (argc != 4)
+    {
+        std::cerr << "Usage: " << argv[0] << " <port> <password>\n";
+        return -1;
+    }
+    try {
+        bot bot(argv[1], std::stoi(argv[2]), "bot", "bot", "bot",argv[3]);
+        bot.connectToServer();
+        bot.listenToServerAndRespond();
+    } catch (bot::botException &e) {
+        std::cerr << "Error in bot: " << e.what() << "\n";
+        return -1;
+    }
 }

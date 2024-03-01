@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "server.hpp"
-#define PORT 6697
-#define PASSWORD "password"
 
 int main(int argc, char *argv[])
 {

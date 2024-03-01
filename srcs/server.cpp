@@ -141,7 +141,6 @@ void server::run()
 
                             try {
                                     this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
-                                    std::cout << "New user connected from " << clientIPs[fds[i].fd] << std::endl;
                                 }
                             catch (user::userException &e)
                                 {
@@ -165,10 +164,11 @@ void server::run()
                                 users[this->getUserBySocket(fds[i].fd)].clearBuffer();
                             }
                         }
-                        if (sBuffer[sBuffer.size() - 1] == '\n')
-                            sBuffer = sBuffer.substr(0, sBuffer.size() - 2);
-                        else
-                            sBuffer = sBuffer.substr(0, sBuffer.size() - 3);
+                        // trim the buffer
+                        if (sBuffer.find("\r\n")!=  std::string::npos)
+                            sBuffer = sBuffer.substr(0, sBuffer.size() -2);
+                        if (sBuffer.find("\n")!=  std::string::npos)
+                            sBuffer = sBuffer.substr(0, sBuffer.size() -1);
                         std::cerr << "sBuffer: " << sBuffer << std::endl;
                         try {
                             if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
@@ -199,7 +199,7 @@ void server::run()
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
-                                std::cerr << "args[1] which is password : " << args[1] << std::endl;
+                                std::cerr << "args[1] which is password : |" << args[1] << "|" << std::endl;
                                 if (args[1] != password)
                                 {
                                     std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
@@ -374,7 +374,6 @@ void server::run()
                         else if (sBuffer.substr(0,4) == "KICK")
                         {
                             int User = this->getUserBySocket(fds[i].fd);
-                            // std::cout << "<<"<<sBuffer<<">>" <<std::endl;
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 4)
@@ -476,17 +475,17 @@ void server::run()
                         }
                         else if (sBuffer.substr(0, 7) == "PRIVMSG")
                         {
-                            std::string receiver = sBuffer.substr(8, sBuffer.size() - 1);
-                            for (size_t i = 0; i < receiver.size(); i++)
-                            {
-                                if (receiver[i] == ' ')
+                            std::vector<std::string> args = splitCommand(sBuffer);
+                            if (args.size() < 3)
                                 {
-                                    receiver = receiver.substr(0, i);
-                                    break;
+                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PRIVMSG");
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
                                 }
-                            }
-                            std::string message = sBuffer.substr(8, sBuffer.size() - 1);
-                            message = message.substr(receiver.size() + 1, message.size() - 1);
+                            std::string receiver = args[1];
+                            std::string message;
+                            message = args[2];
+                            std::cerr << "message: " << message << "|" << std::endl;
                             std::vector<std::string> receivers;
                             for (size_t i = 0; i < receiver.size(); i++)
                             {

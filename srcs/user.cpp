@@ -65,7 +65,6 @@ void user::setUserName(std::string userName)
 {
     if (this->userName == "")
     {
-        std::cout << "Username set to " << userName << std::endl;
         this->userName = userName;
     }
     else
@@ -75,7 +74,6 @@ void user::setUserName(std::string userName)
         send(socket, reply.c_str(), reply.size(), 0);
         return;
     }
-    std::cout << "Username changed to " << userName << std::endl;
 }
 
 
