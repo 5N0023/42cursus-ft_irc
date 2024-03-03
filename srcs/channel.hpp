@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/28 11:48:37 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/03 18:19:18 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,16 @@ class channel
         std::vector<user> operators;
         std::string key;
         std::string topic;
+        bool has_topic;
         bool mode; // false for public, true for invite-only
     public:
         channel(std::string name);
         ~channel();
+        bool getHasTopic();
         void setName(std::string name);
         std::string getName();
+        std::string getTopic();
+        void setTopic(std::string);
         void addMember(user);
         void addOperator(user);
         bool isMember(user);

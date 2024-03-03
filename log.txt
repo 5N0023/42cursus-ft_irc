@@ -1,0 +1,141 @@
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK bot
+USER bot 0 * bo
+Error in main: Error binding socket
+
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK bot
+sBuffer: USER bot 0 * bot
+USER command : USER bot 0 * bot
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK hoho
+sBuffer: USER hoho 0 * hoho
+USER command : USER hoho 0 * hoho
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK tama
+sBuffer: USER tama 0 * tama
+USER command : USER tama 0 * tama
+sBuffer: BOT 
+sBuffer: JOIN #test
+sBuffer: JOIN #test
+sBuffer: BOT 
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1

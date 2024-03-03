@@ -6,11 +6,16 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/28 11:25:20 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/03 18:19:42 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "channel.hpp"
+
+std::string channel::getTopic(){return topic;}
+void channel::setTopic(std::string Topic){topic=Topic;}
+
+bool  channel::getHasTopic(){return has_topic;}
 
 
 channel::channel(std::string name)
@@ -22,6 +27,7 @@ channel::channel(std::string name)
         throw channelException("Channel name must start with #");
     if (name.length() == 0)
         throw channelException("Channel name cannot be empty");
+    this->has_topic = false;
     this->mode = false;
 }
 

@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/28 15:41:19 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/03 18:49:56 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,6 +317,57 @@ void server::run()
                         
                         
                         //my starting
+                        else if (sBuffer.substr(0,5)=="TOPIC")
+                        {
+                            std::cerr<<"'"<<sBuffer<<"'"<<std::endl;
+                            int User = this->getUserBySocket(fds[i].fd);
+                            try {
+                                std::vector<std::string> vec = split(sBuffer,' ');
+                                // std::cerr<<vec.size()<<std::endl;
+                                if (vec.size() < 2)
+                                   throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"TOPIC")));
+                                if(vec.size() != 2 && vec[2][0] == ':') 
+                                    vec[2]=vec[2].substr(1);
+                                size_t it = 0;
+                                    for ( ;it < channels.size();it++)
+                                    {
+                                        if (channels[it].getName() == vec[1])
+                                        {
+                                            if (channels[it].isMember(users[User]))
+                                            {
+                                                if (vec.size() == 2)
+                                                    {
+                                                        if (channels[it].getHasTopic() == false)
+                                                        {
+                                                            std::cerr<<"testing \n";
+                                                            throw channel::channelException(RPL_NOTOPIC(serverIP,channels[it].getName(),users[User].getNick()));
+                                                        }
+                                                        std::string replay = RPL_TOPICDISPLAY(serverIP,users[User].getNick(),channels[it].getName(),channels[it].getTopic());
+                                                        send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                    }
+                                                else if (channels[it].isoperator(users[User]))  
+                                                {
+                                                    
+                                                }
+                                                else
+                                                    throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));
+                                            }
+                                            else
+                                                throw channel::channelException(ERR_NOTONCHANNEL(serverIP,channels[it].getName()));
+                                            break;
+                                        }
+                                    }
+                                        if (it == channels.size())
+                                            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1],users[User].getNick()));//khesni ne3raf channel li jani mena msg
+                                }
+                    
+                                
+                            catch (channel::channelException &e)
+                            {
+                                std::string replay= e.what();
+                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                            }
+                        }
                         else if (sBuffer.substr(0,6) == "INVITE")
                         {
                             int User = this->getUserBySocket(fds[i].fd);

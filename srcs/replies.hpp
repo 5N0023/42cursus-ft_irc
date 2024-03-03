@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:32 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/27 12:02:31 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/03 19:03:38 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,3 +77,4 @@
 #define PRIVMSG_FORMAT(senderNick, senderUsername, senderHostname, receiver, message) ":" + senderNick + "!~" + senderUsername + "@" + senderHostname + " PRIVMSG " + receiver + " :" + message + "\r\n"
 #define ERR_UNKNOWNCOMMAND(nick, hostname, command) ":" + hostname + " 421 " + nick + " " + command + " :Unknown command\r\n"
 #define ERR_CHANOPRIVSNEEDED(hostname,channel)  ":" + hostname + " 482 " + channel + " :You're not channel operator\r\n"
+#define RPL_NOTOPIC(hostname,channel,nick) (":" + hostname + " 331 " + nick + " " + channel +  " :No topic is set.\r\n")
