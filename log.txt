@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 sBuffer: PASS password
 args[1] which is password : |password|
 sBuffer: NICK bot
@@ -139,3 +140,6 @@ sBuffer: PONG 127.0.0.1
 sBuffer: PONG 127.0.0.1
 sBuffer: PONG 127.0.0.1
 sBuffer: PONG 127.0.0.1
+=======
+sss
+>>>>>>> 55c01e48b813a87ddca380fe80431643783004c1
