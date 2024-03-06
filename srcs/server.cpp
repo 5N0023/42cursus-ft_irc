@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/06 16:07:09 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/06 18:45:03 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,9 +328,6 @@ void server::run()
                                 std::cerr<<std::endl;
                                 if (vec.size() < 3)
                                    throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"MODE")));
-                                
-                            //     if (vec[2][0] == ':') 
-                            //         vec[2] = vec[2].substr(1);
                                 size_t it = 0;
                                     for ( ;it < channels.size();it++)
                                     {
@@ -340,8 +337,12 @@ void server::run()
                                             {
                                                 if (channels[it].isoperator(users[User]))  
                                                 {
+                                                    // std::cerr << "ha howa dkhal"<<std::endl;
+                                                    if (vec[2][0] != '+' && vec[2][0] != '-')
+                                                        throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[0][0]));
                                                     bool positive = (vec[2][0] == '-' ? false : true);
-                                                    std::string ret;
+                                                    std::string ret; 
+                                                    ret+= vec[2][0];
                                                     for (size_t k = 1; k < vec[2].size(); k++)
                                                     {
                                                         try
@@ -351,6 +352,7 @@ void server::run()
                                                                 if (positive != channels[it].getMode())
                                                                 {
                                                                     channels[it].setMode(positive);
+                                                                    ret+='i';
                                                                 }
                                                             }
                                                             else
@@ -363,6 +365,14 @@ void server::run()
                                                             send(fds[i].fd, replay.c_str(), replay.size(), 0);
                                                         }
                                                     }
+                                                    if (ret.size() > 1)
+                                                    {
+                                                        std::vector<user> tmpusers = channels[it].getMembers();
+                                                        std::string reply = RPL_CHANNELMODEIS(users[User].getNick(),serverIP,channels[it].getName(),ret);
+                                                        for (size_t s = 0 ; s < tmpusers.size() ; s++)
+                                                            send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
+                                                    }
+                                                    
                                                 }
                                                 else
                                                     throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));
@@ -848,9 +858,8 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
 USER tamago2 0 * tamago2
 PONG */
 
-//  :*.freenode.net 403 hoho DSAD :No such channel
-//  <hostname>   403 <nick> <channel> :No such channel
+//:tama!~tama@freenode-obu.d75.6g0qj4.IP MODE #testing556 :-i
+//RPL_CHANNELMODEIS ":" + "user.nick" + "!~" + "user.nick" + "@" + "serever ip" + " MODE " + "channel" + " :" + mode + "\r\n" 
 
-//:tamago!~tamago@freenode-obu.d75.6g0qj4.IP KICK #hoho22 tamago2 :tamago
-
-//<hostname> <channel> <kicked> <kicker>
+//for join :
+//:tamago2!~tamago2@freenode-obu.d75.6g0qj4.IP JOIN :#testing556
