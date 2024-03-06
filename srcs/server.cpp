@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/06 12:34:18 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/06 16:07:09 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,7 +283,7 @@ void server::run()
                             }
                         }
                         else if (sBuffer.substr(0, 4) == "JOIN")
-                        {
+                        {//add condition of checking if the channel is invite only && check if it have password or not 
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
@@ -340,7 +340,29 @@ void server::run()
                                             {
                                                 if (channels[it].isoperator(users[User]))  
                                                 {
-                                                    
+                                                    bool positive = (vec[2][0] == '-' ? false : true);
+                                                    std::string ret;
+                                                    for (size_t k = 1; k < vec[2].size(); k++)
+                                                    {
+                                                        try
+                                                        {
+                                                            if (vec[2][k] == 'i')
+                                                            {
+                                                                if (positive != channels[it].getMode())
+                                                                {
+                                                                    channels[it].setMode(positive);
+                                                                }
+                                                            }
+                                                            else
+                                                                throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));
+
+                                                        }
+                                                        catch (channel::channelException &e)
+                                                        {
+                                                            std::string replay = e.what();
+                                                            send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                        }
+                                                    }
                                                 }
                                                 else
                                                     throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP,channels[it].getName()));

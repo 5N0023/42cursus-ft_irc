@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/03 19:33:40 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/06 15:20:20 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,11 @@
 std::string channel::getTopic(){return topic;}
 void channel::setTopic(std::string Topic){topic=Topic;}
 
-bool  channel::getHasTopic(){return has_topic;}
+bool channel::getHasTopic(){return has_topic;}
 void channel::setHasTopic(bool Has){has_topic=Has;}
 
+bool channel::getMode(){return mode;}
+void channel::setMode(bool Mode){mode = Mode;}
 
 channel::channel(std::string name)
 {

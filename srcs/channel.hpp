@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/03 19:32:05 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/06 15:47:15 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ class channel
     public:
         channel(std::string name);
         ~channel();
+        void setMode(bool);
+        bool getMode();
         bool getHasTopic();
         void setName(std::string name);
         std::string getName();
