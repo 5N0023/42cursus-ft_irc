@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 11:33:10 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 13:08:05 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ class channel
         void addOperator(user);
         bool isMember(user);
         bool isoperator(user);
-        void setKey(std::string key);
+        void setKey(std::string);
         std::string getKey();
         void removeMember(user member,int);
         std::vector<user> &getMembers();
