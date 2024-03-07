@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 14:29:06 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 14:29:55 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -364,14 +364,14 @@ void server::run()
                                                                     ret+='t';
                                                                 }
                                                             }
-                                                            // if (vec[2][k] == 'k')
-                                                            // {
-                                                            //     if (!positive)
-                                                            //     {
-                                                            //         channels[it].setKey("");
-                                                            //         ret += 'k';
-                                                            //     }
-                                                            // }
+                                                            if (vec[2][k] == 'k')
+                                                            {
+                                                                if (!positive)
+                                                                {
+                                                                    channels[it].setKey("");
+                                                                    ret += 'k';
+                                                                }
+                                                            }
                                                             else
                                                                 throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));
 
