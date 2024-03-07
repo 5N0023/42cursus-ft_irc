@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/06 18:45:03 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 11:52:35 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,6 +355,14 @@ void server::run()
                                                                     ret+='i';
                                                                 }
                                                             }
+                                                            if (vec[2][k] == 't')
+                                                            {
+                                                                if (positive != channels[it].getTopicStrict())
+                                                                {
+                                                                    channels[it].setTopicStrict(positive);
+                                                                    ret+='t';
+                                                                }
+                                                            }
                                                             else
                                                                 throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));
 
@@ -415,7 +423,7 @@ void server::run()
                                                         std::string replay = RPL_TOPICDISPLAY(serverIP,users[User].getNick(),channels[it].getName(),channels[it].getTopic());
                                                         send(fds[i].fd, replay.c_str(), replay.size(), 0);
                                                     }
-                                                else if (channels[it].isoperator(users[User]))  
+                                                else if (channels[it].isoperator(users[User]) || !channels[it].getTopicStrict())  
                                                 {
                                                     std::string tmp;
                                                     for (size_t h=2;h < vec.size();h++)

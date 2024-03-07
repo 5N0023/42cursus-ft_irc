@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/06 15:20:20 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 11:33:53 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 
 std::string channel::getTopic(){return topic;}
 void channel::setTopic(std::string Topic){topic=Topic;}
+
+bool channel::getTopicStrict(){return topic_strict;}
+void channel::setTopicStrict(bool Topic_strict){topic_strict=Topic_strict;}
 
 bool channel::getHasTopic(){return has_topic;}
 void channel::setHasTopic(bool Has){has_topic=Has;}
@@ -31,6 +34,7 @@ channel::channel(std::string name)
     if (name.length() == 0)
         throw channelException("Channel name cannot be empty");
     this->has_topic = false;
+    this->topic_strict = true;
     this->mode = false;
 }
 
