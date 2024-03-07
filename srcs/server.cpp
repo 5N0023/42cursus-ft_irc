@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 14:29:55 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 15:38:58 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,9 +323,10 @@ void server::run()
                             try {
                                 
                                 std::vector<std::string> vec = split(sBuffer,' ');
-                                for (size_t f=0;f<vec.size();f++)   
-                                    std::cerr<<"'"<<vec[f]<<"'";
-                                std::cerr<<std::endl;
+                                // for (size_t f=0;f<vec.size();f++)   
+                                //     std::cerr<<"'"<<vec[f]<<"'";
+                                //     std::cerr<<vec.size();
+                                // std::cerr<<std::endl;
                                 if (vec.size() < 3)
                                    throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"MODE")));
                                 size_t it = 0;
@@ -342,6 +343,7 @@ void server::run()
                                                         throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[0][0]));
                                                     bool positive = (vec[2][0] == '-' ? false : true);
                                                     std::string ret;
+                                                    size_t arg=3;
                                                     ret+= vec[2][0];
                                                     for (size_t k = 1; k < vec[2].size(); k++)
                                                     {
@@ -365,10 +367,18 @@ void server::run()
                                                             }
                                                             if (vec[2][k] == 'k')
                                                             {
-                                                                if (!positive)
+                                                                if (!positive && channels[it].getHaskey())
                                                                 {
                                                                     channels[it].setKey("");
                                                                     ret += 'k';
+                                                                    channels[it].setHaskey(positive);
+                                                                }
+                                                                else if (vec.size() > arg  && (positive && !channels[it].getHaskey()))
+                                                                {
+                                                                    channels[it].setKey(vec[arg]);
+                                                                    ret += 'k';
+                                                                    arg++;
+                                                                    channels[it].setHaskey(positive);
                                                                 }
                                                             }
                                                             else
@@ -383,6 +393,11 @@ void server::run()
                                                     }
                                                     if (ret.size() > 1)
                                                     {
+                                                        if (arg != 3)
+                                                        {
+                                                            for (size_t hh = 3 ;arg!=hh;hh++)
+                                                                ret += + " " + vec[hh];
+                                                        }
                                                         std::vector<user> tmpusers = channels[it].getMembers();
                                                         std::string reply = RPL_CHANNELMODEIS(users[User].getNick(),serverIP,channels[it].getName(),ret);
                                                         for (size_t s = 0 ; s < tmpusers.size() ; s++)
@@ -489,8 +504,8 @@ void server::run()
                                                         if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                         {
                                                             std::string reply = RPL_INVITE(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]);
-                                                            addChannel(channels[it],tmp1,1);
-                                                                send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
+                                                            channels[it].addInvite(tmp);
+                                                            send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
                                                         }
                                                         else
                                                             throw channel::channelException(ERR_USERONCHANNEL(serverIP,vec[2],vec[1]));
@@ -870,12 +885,11 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
  }
  
 
-/*NICK tamago2
+/*
+NICK tamago2
 USER tamago2 0 * tamago2
-PONG */
+PONG 
 
-//:tama!~tama@freenode-obu.d75.6g0qj4.IP MODE #testing556 :-i
-//RPL_CHANNELMODEIS ":" + "user.nick" + "!~" + "user.nick" + "@" + "serever ip" + " MODE " + "channel" + " :" + mode + "\r\n" 
-
-//for join :
-//:tamago2!~tamago2@freenode-obu.d75.6g0qj4.IP JOIN :#testing556
+:*.freenode.net 696 tamago2 #testing556 k * :You must specify a parameter for the key mode. Syntax: <key>.
+":" server_ip 696 nick channel char "*" " :You must specify a parameter for the key mode. Syntax: <key>."
+*/
