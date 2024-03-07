@@ -18,7 +18,7 @@ SERVERIP = "127.0.0.1"
 PORT = 6697
 PASSWORD = "password"
 
-FLAGS = -Wall -Wextra -Werror  -std=c++98 -fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror  -std=c++98 #-fsanitize=address -g
 
 FILE = 	./srcs/main.cpp\
 		./srcs/channel.cpp\
@@ -70,7 +70,7 @@ fclean: clean
 re : fclean all
 
 run:
-	./server $(PORT) $(PASSWORD) >> log.txt 2>&1 &
+	./server $(PORT) $(PASSWORD) 
 	sleep 1
 	./bot $(SERVERIP) $(PORT) $(PASSWORD) &> botlog.txt 2>&1 &
 
