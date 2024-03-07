@@ -1,0 +1,21 @@
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK bot
+sBuffer: USER bot 0 * bot
+USER command : USER bot 0 * bot
+sBuffer: PASS password
+args[1] which is password : |password|
+sBuffer: NICK user1
+sBuffer: USER user1 0 * user1
+USER command : USER user1 0 * user1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1
+sBuffer: PONG 127.0.0.1

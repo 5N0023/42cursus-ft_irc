@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 15:38:58 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/07 15:41:10 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,18 +286,23 @@ void server::run()
                         {//add condition of checking if the channel is invite only && check if it have password or not 
                             try {
                                 int joinedUser = this->getUserBySocket(fds[i].fd);
-                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                for (size_t i = 0; i < channelName.size(); i++)
+                                std::vector<std::string> args = splitCommand(sBuffer);
+                                if (args.size() < 2)
                                 {
-                                    if (channelName[i] == ' ' || channelName[i] == '\n')
-                                    {
-                                        channelName = channelName.substr(0, i);
-                                        break;
-                                    }
+                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "JOIN");
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
                                 }
-                                channel newChannel(channelName);
-                                if (joinedUser != -1)
-                                    this->addChannel(newChannel, users[joinedUser]);
+                                std::string channelsName = args[1];
+                                std::string keys = args[2];
+                                std::map<std::string, std::string> chans = parseChannels(channelsName, keys);
+                                std::map<std::string, std::string>::iterator it = chans.begin();
+                                while (it != chans.end())
+                                {
+                                    addChannel(it->first, users[joinedUser], it->second);
+                                    it++;
+                                }
+
                             }
                             catch (channel::channelException &e)
                             {
@@ -745,23 +750,29 @@ void server::removeUser(user user)
 }
 
 
-void server::addChannel(channel newChannel, user user,int index)
+void server::addChannel(std::string ChannelName, user user,std::string key)
 {
+    (void)key;
     bool channelExists = false;
-    if (newChannel.getName()[0] != '#')
+    if (ChannelName[0] != '#' && ChannelName[0] != '&')
     {
-        std::string reply = ERR_BADCHANNELNAME(user.getNick(), user.getIpAddress(), newChannel.getName());
+        std::string reply = ERR_BADCHANNELNAME(user.getNick(), user.getIpAddress(), ChannelName);
         send(user.getSocket(), reply.c_str(), reply.size(), 0);
         return;
     }
     int channelsSize = channels.size();
     for (int i = 0; i < channelsSize; i++)
     {
-        if (channels[i].getName() == newChannel.getName())
+        if (channels[i].getName() == ChannelName)
         {
-            if (index == 1)
-                {std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
-                send(user.getSocket(), reply.c_str(), reply.size(), 0);}
+            // check if channel invite only and if the user is invited
+            // check if the channel has a password and if the user has the right password
+            for (size_t j = 0; j < channels[i].getMembers().size(); j++)
+            {
+
+                std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
+                send(channels[i].getMembers()[i].getSocket(), reply.c_str(), reply.size(), 0);
+            }
             channelExists = true;
             channels[i].addMember(user);
             break;
@@ -771,10 +782,11 @@ void server::addChannel(channel newChannel, user user,int index)
     {
         return;
     }
+    class channel newChannel(ChannelName);
     newChannel.addMember(user);
     newChannel.addOperator(user);// add user to operatot and reply with it
     channels.push_back(newChannel);
-    std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), newChannel.getName(), user.getIpAddress());
+    std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
     send(user.getSocket(), reply.c_str(), reply.size(), 0);
 
 }

@@ -65,22 +65,32 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
             chansVec.push_back(chan);
             chan = "";
         }
-        else
+        else if (i != channels.length() - 1)
         {
             chan += channels[i];
+        }
+        else if (i == channels.length() - 1)
+        {
+            chan += channels[i];
+            chansVec.push_back(chan);
         }
     }
 
     for (size_t i = 0; i < keys.length(); i++)
     {
-        if (keys[i] == ',')
+        if (keys[i] == ',' || i == keys.length())
         {
             keysVec.push_back(key);
             key = "";
         }
-        else
+        else if (i != keys.length() - 1)
         {
             key += keys[i];
+        }
+        else if (i == keys.length() - 1)
+        {
+            key += keys[i];
+            keysVec.push_back(key);
         }
     }
     for (size_t i = 0; i < chansVec.size(); i++)
@@ -91,6 +101,10 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
         }
         chans[chansVec[i]] = keysVec[i];
     }
+    // for (size_t i = 0; i < chansVec.size(); i++)
+    // {
+    //     std::cerr << "channel :" << channels[i] << " key : " << keysVec[i] << std::endl;
+    // }
     return chans;
 }
 
