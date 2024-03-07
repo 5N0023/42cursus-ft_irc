@@ -342,7 +342,6 @@ void server::run()
                                                         throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[0][0]));
                                                     bool positive = (vec[2][0] == '-' ? false : true);
                                                     std::string ret;
-                                                    size_t arg = 3; 
                                                     ret+= vec[2][0];
                                                     for (size_t k = 1; k < vec[2].size(); k++)
                                                     {
