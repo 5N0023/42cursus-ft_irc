@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 4)
     {
-        std::cerr << "Usage: " << argv[0] << " <port> <password>\n";
+        std::cerr << "Usage: " << argv[0] << " <server> <port> <password>\n";
         return -1;
     }
     try {
