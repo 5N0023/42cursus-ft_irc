@@ -6,20 +6,33 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 15:33:57 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 16:09:03 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "channel.hpp"
 
+void channel::AddEraseOperator(user target)
+{
+     for (std::vector<user>::iterator i = operators.begin(); i < operators.end(); i++)
+    {
+        if (i->getNick() == target.getNick())
+        {
+            operators.erase(i);
+            return;
+        }
+    }
+    this->operators.push_back(target);
+}
+
 void channel::addInvite(user target)
 {
     for (size_t i = 0; i < invited.size(); i++)
     {
-        if (invited[i].getNick() == target.getNick())
+        if (invited[i]== target.getNick())
             return;
     }
-    invited.push_back(target);
+    this->invited.push_back(target.getNick());
 }
 
 std::string channel::getTopic(){return topic;}
@@ -179,7 +192,7 @@ bool channel::isInvited(user target)
 {
     for (size_t i = 0; i < invited.size(); i++)
     {
-        if (invited[i].getNick() == target.getNick())
+        if (invited[i] == target.getNick())
             return true;
     }
     return false;

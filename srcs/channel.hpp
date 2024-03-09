@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 15:30:53 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 15:56:51 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class channel
 {
     private:
         std::string name;
-        std::vector<user> invited;
+        std::vector<std::string> invited;
         std::vector<user> members;
         std::vector<user> operators;
         std::string key;
@@ -39,6 +39,7 @@ class channel
     public:
         channel(std::string name);
         ~channel();
+        void AddEraseOperator(user);
         void addInvite(user);
         void setMode(bool);
         bool getMode();

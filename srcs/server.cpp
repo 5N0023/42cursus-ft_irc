@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 13:10:01 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 16:09:23 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,23 +379,17 @@ void server::run()
                                                     {
                                                         try
                                                         {
-                                                            if (vec[2][k] == 'i')
+                                                            if (vec[2][k] == 'i' && positive != channels[it].getMode())
                                                             {
-                                                                if (positive != channels[it].getMode())
-                                                                {
                                                                     channels[it].setMode(positive);
-                                                                    ret+='i';
-                                                                }
+                                                                    ret += 'i';
                                                             }
-                                                            if (vec[2][k] == 't')
+                                                            else if (vec[2][k] == 't' && positive != channels[it].getTopicStrict())
                                                             {
-                                                                if (positive != channels[it].getTopicStrict())
-                                                                {
                                                                     channels[it].setTopicStrict(positive);
                                                                     ret+='t';
-                                                                }
                                                             }
-                                                            if (vec[2][k] == 'k')
+                                                            else if (vec[2][k] == 'k')
                                                             {
                                                                 if (!positive && channels[it].getHaskey())
                                                                 {
@@ -411,10 +405,20 @@ void server::run()
                                                                     channels[it].setHaskey(positive);
                                                                 }
                                                             }
-                                                            // if (vec[2][k] == 'o')
-                                                            // {
-                                                                
-                                                            // }
+                                                            else if (vec[2][k] == 'o' && vec.size() > arg)
+                                                            {
+                                                                    user tmp = getUser_str(vec[arg], users);
+                                                                    if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP,vec[arg]));
+                                                                    else if (!channels[it].isMember(tmp) || (channels[it].isoperator(tmp) && positive))
+                                                                    {}
+                                                                    else
+                                                                    {
+                                                                        channels[it].AddEraseOperator(tmp);
+                                                                        ret += 'o';
+                                                                        arg++;
+                                                                    }
+                                                            }
                                                             else
                                                                 throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));
 
@@ -423,6 +427,8 @@ void server::run()
                                                         {
                                                             std::string replay = e.what();
                                                             send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                            if (replay == ERR_NOSUCHNICK(serverIP,vec[arg]))
+                                                                break;
                                                         }
                                                     }
                                                     if (ret.size() > 1)
@@ -464,7 +470,7 @@ void server::run()
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 2)
                                    throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"TOPIC")));
-                                if(vec.size() != 2 && vec[2][0] == ':') 
+                                if (vec.size() != 2 && vec[2][0] == ':') 
                                     vec[2]=vec[2].substr(1);
                                 size_t it = 0;
                                     for ( ;it < channels.size();it++)
@@ -503,8 +509,6 @@ void server::run()
                                         if (it == channels.size())
                                             throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1],users[User].getNick()));//khesni ne3raf channel li jani mena msg
                                 }
-                    
-                                
                             catch (channel::channelException &e)
                             {
                                 std::string replay= e.what();
@@ -538,7 +542,7 @@ void server::run()
                                                         if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                         {
                                                             std::string reply = RPL_INVITE(users[User].getNick(),users[User].getNick(),serverIP,vec[1],vec[2]);
-                                                            channels[it].addInvite(tmp);
+                                                            channels[it].addInvite(getUser_str(vec[1],users));
                                                             send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
                                                         }
                                                         else
