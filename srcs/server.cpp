@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 21:54:14 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 22:24:36 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -837,9 +837,10 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
 
 
             channels[i].addMember(user);
+            if (channels[i].getInviteOnly())
+                channels[i].eraseInvited(user);
             for (size_t j = 0; j < channels[i].getMembers().size(); j++)
             {
-
                 std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
                 send(channels[i].getMembers()[j].getSocket(), reply.c_str(), reply.size(), 0);
                 std::cerr << "reply: " << reply << std::endl;

@@ -6,13 +6,23 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 21:40:51 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 22:22:43 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "channel.hpp"
 
-
+void channel::eraseInvited(user target)
+{
+    for (std::vector<std::string>::iterator i = invited.begin(); i < invited.end(); i++)
+    {
+        if (*i == target.getNick())
+        {
+            invited.erase(i);
+            return;
+        }
+    }
+}
 void channel::setLimit(size_t LIMIT){limit=LIMIT;}
 size_t channel::getLimit(){return limit;}
 
