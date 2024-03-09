@@ -58,7 +58,8 @@ void server::run()
     listenFd.events = POLLIN;
     fds.push_back(listenFd);
     // get the ip address of the server
-    serverIP = "0.0.0.0";
+    serverIP = getLocalIP();
+    std::cerr << "serverIP: " << serverIP << std::endl;
 
 
     // Map to store client IP addresses
@@ -120,6 +121,18 @@ void server::run()
                         try{
                             if (this->getUserBySocket(fds[i].fd) != -1)
                             {
+                                for (size_t j = 0; j < channels.size(); j++)
+                                {
+                                    if (channels[j].isMember(users[this->getUserBySocket(fds[i].fd)]))
+                                    {
+                                        channels[j].removeMember(users[this->getUserBySocket(fds[i].fd)],1);
+                                        if (channels[j].getMembers().size() == 0)
+                                        {
+                                            this->removeChannel(channels[j]);
+                                            j--;
+                                        }
+                                    }
+                                }
                                 this->removeUser(users[this->getUserBySocket(fds[i].fd)]);
                             }
                         }
@@ -226,7 +239,21 @@ void server::run()
                                 fds.erase(fds.begin() + i);
                                 --i;
                                 if (user != -1)
+                                {
+                                    for (size_t j = 0; j < channels.size(); j++)
+                                    {
+                                        if (channels[j].isMember(users[user]))
+                                        {
+                                            channels[j].removeMember(users[user],1);
+                                            if (channels[j].getMembers().size() == 0)
+                                            {
+                                                this->removeChannel(channels[j]);
+                                                j--;
+                                            }
+                                        }
+                                    }
                                     this->removeUser(users[user]);
+                                }
                             }
                             catch (server::serverException &e)
                             {
@@ -245,13 +272,11 @@ void server::run()
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
-                                    users[user].setNick(args[1], users);
+                                    users[user].setNick(args[1], users,serverIP);
                             }
                             catch (user::userException &e)
                             {
                                 std::cerr << "Error NICK: " << e.what() << "\n";
-                                std::string reply = ERR_NICKNAMEINUSE(args[1], clientIPs[fds[i].fd]);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
                         else if (sBuffer.substr(0, 4) == "USER")
@@ -275,7 +300,7 @@ void server::run()
                                     }
                                 }
                                 if (user != -1)
-                                    users[user].setUserName(args[1]);
+                                    users[user].setUserName(args[1],serverIP);
                             }
                             catch (user::userException &e)
                             {
@@ -744,7 +769,7 @@ void server::removeUser(user user)
     int usersSize = users.size();
     for (int i = 0; i < usersSize; i++)
     {
-        if (users[i].getUserName() == user.getUserName())
+        if (users[i].getSocket() == user.getSocket())
         {
             users.erase(users.begin() + i);
             return;
@@ -771,14 +796,29 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
         {
             // check if channel invite only and if the user is invited
             // check if the channel has a password and if the user has the right password
+
+
+
+            channels[i].addMember(user);
             for (size_t j = 0; j < channels[i].getMembers().size(); j++)
             {
 
                 std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
-                send(channels[i].getMembers()[i].getSocket(), reply.c_str(), reply.size(), 0);
+                send(channels[i].getMembers()[j].getSocket(), reply.c_str(), reply.size(), 0);
+                std::cerr << "reply: " << reply << std::endl;
             }
+            // send list of users in the channel
+            std::string users ;
+            for (size_t j = 0; j < channels[i].getMembers().size(); j++)
+            {
+                if (channels[i].isoperator(channels[i].getMembers()[j]))
+                    users += "@" + channels[i].getMembers()[j].getNick() + " ";
+                else
+                    users += channels[i].getMembers()[j].getNick() + " ";
+            }
+            std::string reply = RPL_NAMREPLY(serverIP, users ,ChannelName,user.getNick());
+            send(user.getSocket(), reply.c_str(), reply.size(), 0);
             channelExists = true;
-            channels[i].addMember(user);
             break;
         }
     }
@@ -791,6 +831,8 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
     newChannel.addOperator(user);// add user to operatot and reply with it
     channels.push_back(newChannel);
     std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
+    send(user.getSocket(), reply.c_str(), reply.size(), 0);
+    reply  = RPL_NAMREPLY(serverIP,"@" + user.getNick() + " ", ChannelName, user.getNick());
     send(user.getSocket(), reply.c_str(), reply.size(), 0);
 
 }

@@ -37,12 +37,11 @@ class user
         std::string getBuffer();
         void appendBuffer(std::string Buffer);
         void clearBuffer();
-        void setUserName(std::string userName);
-        void setNick(std::string nick, std::vector<user> users);
+        void setUserName(std::string userName,std::string serverIP);
+        void setNick(std::string nick, std::vector<user> users, std::string serverIP);
         bool getRegistered();
         bool getPasswordCorrect();
         void setPassConfirmed(bool pass);
-        // void setNick(std::string nick);
         // void setIpAddress(std::string ipAddress);
         // void setSocket(int socket);
         std::string getUserName();
