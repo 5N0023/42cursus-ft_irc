@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 16:09:23 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 21:54:14 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,15 +379,21 @@ void server::run()
                                                     {
                                                         try
                                                         {
-                                                            if (vec[2][k] == 'i' && positive != channels[it].getMode())
+                                                            if (vec[2][k] == 'i' )
                                                             {
-                                                                    channels[it].setMode(positive);
-                                                                    ret += 'i';
+                                                                if (positive != channels[it].getMode())
+                                                                {
+                                                                        channels[it].setMode(positive);
+                                                                        ret += 'i';
+                                                                }
                                                             }
-                                                            else if (vec[2][k] == 't' && positive != channels[it].getTopicStrict())
+                                                            else if (vec[2][k] == 't' )
                                                             {
-                                                                    channels[it].setTopicStrict(positive);
-                                                                    ret+='t';
+                                                                if (positive != channels[it].getTopicStrict())
+                                                                {
+                                                                        channels[it].setTopicStrict(positive);
+                                                                        ret+='t';
+                                                                }
                                                             }
                                                             else if (vec[2][k] == 'k')
                                                             {
@@ -405,8 +411,10 @@ void server::run()
                                                                     channels[it].setHaskey(positive);
                                                                 }
                                                             }
-                                                            else if (vec[2][k] == 'o' && vec.size() > arg)
+                                                            else if (vec[2][k] == 'o' )
                                                             {
+                                                                if (vec.size() > arg)
+                                                                {
                                                                     user tmp = getUser_str(vec[arg], users);
                                                                     if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                                         throw channel::channelException(ERR_NOSUCHNICK(serverIP,vec[arg]));
@@ -418,6 +426,22 @@ void server::run()
                                                                         ret += 'o';
                                                                         arg++;
                                                                     }
+                                                                }
+                                                            }
+                                                            else if (vec[2][k] == 'l')
+                                                            {
+                                                                if (positive && vec.size() > arg && has_char(vec[arg]) && (channels[it].getLimit()  != ToSize_T(vec[arg])||!channels[it].getHasLimit()))
+                                                                {
+                                                                    channels[it].setHasLimit(positive);
+                                                                    channels[it].setLimit(ToSize_T(vec[arg]));
+                                                                    ret += 'l';
+                                                                    arg++;
+                                                                }
+                                                                else if (!positive && channels[it].getHasLimit())
+                                                                {
+                                                                    channels[it].setHasLimit(positive);
+                                                                    ret += 'l';
+                                                                }
                                                             }
                                                             else
                                                                 throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));

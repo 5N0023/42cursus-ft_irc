@@ -6,13 +6,28 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/28 15:16:03 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 21:56:44 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
 
-
+size_t ToSize_T(std::string& str) {
+    std::istringstream iss(str);
+    size_t result;
+    if (!(iss >> result))
+        return SIZE_MAX;
+    return result;
+}
+bool has_char(std::string str)
+{
+    for (size_t i=0; i<str.size();i++)
+    {
+        if (!std::isdigit(str[i]))
+            return false;
+    }
+    return true;
+}
 std::string getreason(std::vector<std::string> vector ,int begin)
 {
     std::string str="";

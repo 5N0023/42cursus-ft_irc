@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 15:56:51 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 21:17:02 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,12 +33,18 @@ class channel
         std::string key;
         std::string topic;
         bool has_topic;
+        bool has_limit;
+        size_t limit;
         bool has_key;//tr
         bool topic_strict; // true for operator can only change the topic , false all the members can change the topic
         bool mode; // false for public, true for invite-only
     public:
         channel(std::string name);
         ~channel();
+        bool getHasLimit();
+        void setHasLimit(bool);
+        size_t getLimit();
+        void setLimit(size_t);
         void AddEraseOperator(user);
         void addInvite(user);
         void setMode(bool);

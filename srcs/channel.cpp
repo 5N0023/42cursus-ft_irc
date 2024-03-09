@@ -6,11 +6,18 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 16:09:03 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 21:40:51 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "channel.hpp"
+
+
+void channel::setLimit(size_t LIMIT){limit=LIMIT;}
+size_t channel::getLimit(){return limit;}
+
+bool channel::getHasLimit(){return has_limit;}
+void channel::setHasLimit(bool HAS_LIMIT){has_limit=HAS_LIMIT;}
 
 void channel::AddEraseOperator(user target)
 {
@@ -61,6 +68,8 @@ channel::channel(std::string name)
         throw channelException("Channel name cannot be empty");
     this->has_topic = false;
     this->has_key = false;
+    this->limit = 0;
+    this->has_limit = false;
     this->topic_strict = true;
     this->mode = false;
 }
