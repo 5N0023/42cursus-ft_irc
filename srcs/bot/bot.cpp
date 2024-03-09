@@ -39,18 +39,18 @@ void bot::connectToServer()
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(CONNECTION_PORT);
 
-    if (inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr) <= 0)
+    if (inet_pton(AF_INET, server.c_str(), &server_address.sin_addr) <= 0)
     {
-        perror("Invalid address / Address not supported");
-        exit(EXIT_FAILURE);
+        throw botException("Invalid address/ Address not supported");
     }
 
     if (connect(socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
     {
        throw botException("Connection failed");
     }
-    // std::string passwordSend ="PASS "+ serverPassword + " \r\n",
-    send(socket, "PASS password\r\n",strlen("PASS password\r\n"),0);
+    std::string passwordSend ="PASS "+ serverPassword + " \r\n";
+    const char *passwordChar = passwordSend.c_str();
+    send(socket, passwordChar, strlen(passwordChar), 0);
     usleep(500);
     send(socket, "NICK bot\r\n", strlen("NICK bot\r\n"), 0);
     usleep(500);
