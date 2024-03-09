@@ -58,7 +58,8 @@ void server::run()
     listenFd.events = POLLIN;
     fds.push_back(listenFd);
     // get the ip address of the server
-    serverIP = "0.0.0.0";
+    serverIP = getLocalIP();
+    std::cerr << "serverIP: " << serverIP << std::endl;
 
 
     // Map to store client IP addresses
@@ -271,13 +272,11 @@ void server::run()
                             try {
                                 int user = this->getUserBySocket(fds[i].fd);
                                 if (user != -1)
-                                    users[user].setNick(args[1], users);
+                                    users[user].setNick(args[1], users,serverIP);
                             }
                             catch (user::userException &e)
                             {
                                 std::cerr << "Error NICK: " << e.what() << "\n";
-                                std::string reply = ERR_NICKNAMEINUSE(args[1], clientIPs[fds[i].fd]);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
                         else if (sBuffer.substr(0, 4) == "USER")
@@ -301,7 +300,7 @@ void server::run()
                                     }
                                 }
                                 if (user != -1)
-                                    users[user].setUserName(args[1]);
+                                    users[user].setUserName(args[1],serverIP);
                             }
                             catch (user::userException &e)
                             {
@@ -766,7 +765,7 @@ void server::removeUser(user user)
     int usersSize = users.size();
     for (int i = 0; i < usersSize; i++)
     {
-        if (users[i].getUserName() == user.getUserName())
+        if (users[i].getSocket() == user.getSocket())
         {
             users.erase(users.begin() + i);
             return;
