@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 15:41:10 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 13:10:01 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -386,6 +386,10 @@ void server::run()
                                                                     channels[it].setHaskey(positive);
                                                                 }
                                                             }
+                                                            // if (vec[2][k] == 'o')
+                                                            // {
+                                                                
+                                                            // }
                                                             else
                                                                 throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(),serverIP,channels[it].getName(),vec[2][k]));
 
