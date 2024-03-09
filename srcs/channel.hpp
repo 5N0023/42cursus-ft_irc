@@ -57,6 +57,9 @@ class channel
         bool isMember(user);
         bool isoperator(user);
         void setKey(std::string);
+
+        bool isInvited(user);
+        bool getInviteOnly();
         
         std::string getKey();
         void removeMember(user member,int);

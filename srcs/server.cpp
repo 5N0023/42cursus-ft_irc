@@ -790,9 +790,18 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
     {
         if (channels[i].getName() == ChannelName)
         {
-            // check if channel invite only and if the user is invited
-            // check if the channel has a password and if the user has the right password
-
+            if (channels[i].getInviteOnly() && !channels[i].isInvited(user))
+            {
+                std::string reply = ERR_INVITEONLY(user.getNick(), ChannelName);
+                send(user.getSocket(), reply.c_str(), reply.size(), 0);
+                return;
+            }
+            if (channels[i].getHaskey() && channels[i].getKey() != key)
+            {
+                std::string reply = ERR_BADCHANNELKEY(user.getNick(),serverIP,ChannelName);
+                send(user.getSocket(), reply.c_str(), reply.size(), 0);
+                return;
+            }
 
 
             channels[i].addMember(user);
@@ -803,7 +812,6 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
                 send(channels[i].getMembers()[j].getSocket(), reply.c_str(), reply.size(), 0);
                 std::cerr << "reply: " << reply << std::endl;
             }
-            // send list of users in the channel
             std::string users ;
             for (size_t j = 0; j < channels[i].getMembers().size(); j++)
             {
@@ -824,7 +832,7 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
     }
     class channel newChannel(ChannelName);
     newChannel.addMember(user);
-    newChannel.addOperator(user);// add user to operatot and reply with it
+    newChannel.addOperator(user);
     channels.push_back(newChannel);
     std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
     send(user.getSocket(), reply.c_str(), reply.size(), 0);

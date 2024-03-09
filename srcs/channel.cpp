@@ -174,3 +174,18 @@ std::vector<user> &channel::getOperators()
 {
     return operators;
 }
+
+bool channel::isInvited(user target)
+{
+    for (size_t i = 0; i < invited.size(); i++)
+    {
+        if (invited[i].getNick() == target.getNick())
+            return true;
+    }
+    return false;
+}
+
+bool channel::getInviteOnly()
+{
+    return mode;
+}
