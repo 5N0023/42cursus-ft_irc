@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 22:24:36 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/09 22:32:23 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -834,6 +834,12 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
                 send(user.getSocket(), reply.c_str(), reply.size(), 0);
                 return;
             }
+            if (channels[i].getHasLimit() && channels[i].getMembers().size() == channels[i].getLimit())
+            {
+                std::string reply = ERR_CHANNELISFULL(user.getNick(),ChannelName);
+                send(user.getSocket(), reply.c_str(), reply.size(), 0);
+                return;
+            }
 
 
             channels[i].addMember(user);
@@ -987,4 +993,8 @@ PONG
 
 :*.freenode.net 696 tamago2 #testing556 k * :You must specify a parameter for the key mode. Syntax: <key>.
 ":" server_ip 696 nick channel char "*" " :You must specify a parameter for the key mode. Syntax: <key>."
+
+
+:*.freenode.net 471 tamago2 #testing556 :Cannot join channel (channel is full)
+":" server_ip " 471 " nick channel " :Cannot join channel (+l)"
 */
