@@ -57,9 +57,11 @@ class channel
         bool isMember(user);
         bool isoperator(user);
         void setKey(std::string);
+        
         std::string getKey();
         void removeMember(user member,int);
         std::vector<user> &getMembers();
+        std::vector<user> &getOperators();
         class channelException : public std::exception
         {
             private:

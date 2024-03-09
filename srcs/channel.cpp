@@ -124,6 +124,15 @@ void channel::removeMember(user member,int index)
     if (member.getSocket() == -1 && member.getIpAddress() == "error")
         return;
     int membersSize = members.size();
+    int operatorsSize = operators.size();
+    for (int i = 0; i < operatorsSize; i++)
+    {
+        if (operators[i].getSocket() == member.getSocket())
+        {
+            operators.erase(operators.begin() + i);
+            break;
+        }
+    }
     for (int i = 0; i < membersSize; i++)
     {
         if (members[i].getSocket() == member.getSocket())
@@ -159,4 +168,9 @@ bool channel::isoperator(user operat)
     }
    
     return false;
+}
+
+std::vector<user> &channel::getOperators()
+{
+    return operators;
 }
