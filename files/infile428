@@ -1,0 +1,5 @@
+PASS password 
+NICK nick428
+USER user428 0 * abc
+JOIN #channel428
+PRIVMSG #channel428 :hello world!

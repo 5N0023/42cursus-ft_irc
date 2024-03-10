@@ -1,0 +1,5 @@
+PASS password 
+NICK nick34
+USER user34 0 * abc
+JOIN #channel34
+PRIVMSG #channel34 :hello world!

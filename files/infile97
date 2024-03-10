@@ -1,0 +1,5 @@
+PASS password 
+NICK nick97
+USER user97 0 * abc
+JOIN #channel97
+PRIVMSG #channel97 :hello world!

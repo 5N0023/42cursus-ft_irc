@@ -1,0 +1,5 @@
+PASS password 
+NICK nick949
+USER user949 0 * abc
+JOIN #channel949
+PRIVMSG #channel949 :hello world!

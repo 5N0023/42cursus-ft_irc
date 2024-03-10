@@ -1,0 +1,5 @@
+PASS password 
+NICK nick747
+USER user747 0 * abc
+JOIN #channel747
+PRIVMSG #channel747 :hello world!

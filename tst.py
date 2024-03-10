@@ -1,6 +1,7 @@
 import os
 import sys
-TMP='''PASS password \r\nNICK nick{0}\r\nUSER user{0} 0 * abc\r\nJOIN #channel{0}\r\nPRIVMSG #channel{0} :hello world!\r\n'''
+TMP='''PASS password \r\n'''
+'''NICK nick{0}\r\nUSER user{0} 0 * abc\r\nJOIN #channel{0}\r\nPRIVMSG #channel{0} :hello world!\r\n'''
 
 
 for clinet in range(int(sys.argv[1])):

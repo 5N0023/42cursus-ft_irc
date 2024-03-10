@@ -1,0 +1,5 @@
+PASS password 
+NICK nick360
+USER user360 0 * abc
+JOIN #channel360
+PRIVMSG #channel360 :hello world!

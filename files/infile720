@@ -1,0 +1,5 @@
+PASS password 
+NICK nick720
+USER user720 0 * abc
+JOIN #channel720
+PRIVMSG #channel720 :hello world!
