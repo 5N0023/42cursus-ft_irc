@@ -179,8 +179,8 @@ void server::run()
                             }
                         }
                         // trim the buffer
-                        sBuffer = sBuffer.substr(0, sBuffer.find('\n') -1);
-                        sBuffer = sBuffer.substr(0, sBuffer.find('\r') -1);
+                        sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
+                        sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
                         std::cerr << "sBuffer: " << sBuffer << std::endl;
                         try {
                             if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
