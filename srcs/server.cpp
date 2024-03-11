@@ -100,6 +100,8 @@ void server::run()
                     clientFd.fd = clientSocket;
                     clientFd.events = POLLIN;
                     fds.push_back(clientFd);
+                    user newUser(clientIPs[clientSocket], clientSocket);
+                    users.push_back(newUser);
                     }
                     catch (server::serverException &e)
                     {
@@ -119,21 +121,21 @@ void server::run()
                         fds.erase(fds.begin() + i);
                         --i; // Adjust index after erase
                         try{
-                            if (this->getUserBySocket(fds[i].fd) != -1)
+                            if (getUserBySocket(fds[i].fd) != -1)
                             {
                                 for (size_t j = 0; j < channels.size(); j++)
                                 {
-                                    if (channels[j].isMember(users[this->getUserBySocket(fds[i].fd)]))
+                                    if (channels[j].isMember(users[getUserBySocket(fds[i].fd)]))
                                     {
-                                        channels[j].removeMember(users[this->getUserBySocket(fds[i].fd)],1);
+                                        channels[j].removeMember(users[getUserBySocket(fds[i].fd)],1);
                                         if (channels[j].getMembers().size() == 0)
                                         {
-                                            this->removeChannel(channels[j]);
+                                            removeChannel(channels[j]);
                                             j--;
                                         }
                                     }
                                 }
-                                this->removeUser(users[this->getUserBySocket(fds[i].fd)]);
+                                removeUser(users[getUserBySocket(fds[i].fd)]);
                             }
                         }
                         catch (server::serverException &e)
@@ -149,47 +151,67 @@ void server::run()
                     }
                     else
                     {
-                        if (this->getUserBySocket(fds[i].fd) == -1)
-                        {
-
-                            try {
-                                    this->addUser(user(clientIPs[fds[i].fd], fds[i].fd));
-                                }
-                            catch (user::userException &e)
-                                {
-                                    std::cerr << "Error: " << e.what() << "\n";
-                                }
-                        }
                         sBuffer.clear();
                         sBuffer = std::string(buffer, bytesRead);
                         // std::cerr << "asdsd :: " << sBuffer << ":::" << std::endl;
                          if (sBuffer.find('\n') == std::string::npos)
                         {
-                            if (this->getUserBySocket(fds[i].fd) != -1)
-                                users[this->getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                            if (getUserBySocket(fds[i].fd) != -1)
+                                users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
                             continue;
                         }
                         else
                         {
-                            if (this->getUserBySocket(fds[i].fd) != -1)
+                            if (getUserBySocket(fds[i].fd) != -1)
                             {
-                                users[this->getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
-                                sBuffer = users[this->getUserBySocket(fds[i].fd)].getBuffer();
-                                users[this->getUserBySocket(fds[i].fd)].clearBuffer();
+                                users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                                sBuffer = users[getUserBySocket(fds[i].fd)].getBuffer();
+                                users[getUserBySocket(fds[i].fd)].clearBuffer();
                             }
                         }
                         // trim the buffer
                         sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
                         sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
                         std::cerr << "sBuffer: " << sBuffer << std::endl;
+                        if (sBuffer.substr(0, 4) == "QUIT")
+                        {
+                            try {
+                                int user = getUserBySocket(fds[i].fd);
+                                close(fds[i].fd);
+                                clientIPs.erase(fds[i].fd);
+                                fds.erase(fds.begin() + i);
+                                --i;
+                                if (user != -1)
+                                {
+                                    for (size_t j = 0; j < channels.size(); j++)
+                                    {
+                                        if (channels[j].isMember(users[user]))
+                                        {
+                                            channels[j].removeMember(users[user],1);
+                                            if (channels[j].getMembers().size() == 0)
+                                            {
+                                                removeChannel(channels[j]);
+                                                j--;
+                                            }
+                                        }
+                                    }
+                                    removeUser(users[user]);
+                                }
+                            }
+                            catch (server::serverException &e)
+                            {
+                                std::cerr << "Error: " << e.what() << "\n";
+                            }
+                            continue;
+                        }
                         try {
-                            if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
+                            if (sBuffer.substr(0, 4) != "PASS" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
                             {
                                 std::string reply = ERR_NEEDPASS(clientIPs[fds[i].fd], serverIP);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 continue;
                             }
-                            if (sBuffer.substr(0, 4) != "NICK" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getRegistered() == false && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
+                            if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                             {
                                 std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
@@ -219,7 +241,7 @@ void server::run()
                                 }
                                 else
                                 {
-                                    int user = this->getUserBySocket(fds[i].fd);
+                                    int user = getUserBySocket(fds[i].fd);
                                     if (user != -1)
                                         users[user].setPassConfirmed(true);
                                 }
@@ -229,36 +251,7 @@ void server::run()
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
                         }
-                        else if (sBuffer.substr(0, 4) == "QUIT")
-                        {
-                            try {
-                                int user = this->getUserBySocket(fds[i].fd);
-                                close(fds[i].fd);
-                                clientIPs.erase(fds[i].fd);
-                                fds.erase(fds.begin() + i);
-                                --i;
-                                if (user != -1)
-                                {
-                                    for (size_t j = 0; j < channels.size(); j++)
-                                    {
-                                        if (channels[j].isMember(users[user]))
-                                        {
-                                            channels[j].removeMember(users[user],1);
-                                            if (channels[j].getMembers().size() == 0)
-                                            {
-                                                this->removeChannel(channels[j]);
-                                                j--;
-                                            }
-                                        }
-                                    }
-                                    this->removeUser(users[user]);
-                                }
-                            }
-                            catch (server::serverException &e)
-                            {
-                                std::cerr << "Error: " << e.what() << "\n";
-                            }
-                        }
+                        
                         else if (sBuffer.substr(0, 4) == "NICK")
                         {
                             std::vector<std::string> args = splitCommand(sBuffer);
@@ -269,7 +262,7 @@ void server::run()
                                 continue;
                             }
                             try {
-                                int user = this->getUserBySocket(fds[i].fd);
+                                int user = getUserBySocket(fds[i].fd);
                                 if (user != -1)
                                     users[user].setNick(args[1], users,serverIP);
                             }
@@ -289,7 +282,7 @@ void server::run()
                                 continue;
                             }
                             try {
-                                int user = this->getUserBySocket(fds[i].fd);
+                                int user = getUserBySocket(fds[i].fd);
                                 for (size_t i = 0; i < args[1].size(); i++)
                                 {
                                     if (args[1][i] == ' ')
@@ -298,8 +291,16 @@ void server::run()
                                         break;
                                     }
                                 }
+                                // show all fds 
+                                std::cerr<< "fds[i].fd: " << fds[i].fd << std::endl;
+                                for (size_t j = 0; j < fds.size(); j++)
+                                {
+                                    std::cerr << "fds[" << j << "].fd: " << fds[j].fd << std::endl;
+                                }
                                 if (user != -1)
+                                {
                                     users[user].setUserName(args[1],serverIP);
+                                }
                             }
                             catch (user::userException &e)
                             {
@@ -309,7 +310,7 @@ void server::run()
                         else if (sBuffer.substr(0, 4) == "JOIN")
                         {//add condition of checking if the channel is invite only && check if it have password or not 
                             try {
-                                int joinedUser = this->getUserBySocket(fds[i].fd);
+                                int joinedUser = getUserBySocket(fds[i].fd);
                                 std::vector<std::string> args = splitCommand(sBuffer);
                                 if (args.size() < 2)
                                 {
@@ -348,7 +349,7 @@ void server::run()
                         //my starting
                         else if (sBuffer.substr(0,4)=="MODE")
                         {
-                            int User = this->getUserBySocket(fds[i].fd);
+                            int User = getUserBySocket(fds[i].fd);
                             try {
                                 
                                 std::vector<std::string> vec = split(sBuffer,' ');
@@ -488,7 +489,7 @@ void server::run()
                         }
                         else if (sBuffer.substr(0,5)=="TOPIC")
                         {
-                            int User = this->getUserBySocket(fds[i].fd);
+                            int User = getUserBySocket(fds[i].fd);
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 2)
@@ -540,7 +541,7 @@ void server::run()
                         }
                         else if (sBuffer.substr(0,6) == "INVITE")
                         {
-                            int User = this->getUserBySocket(fds[i].fd);
+                            int User = getUserBySocket(fds[i].fd);
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 3)
@@ -594,7 +595,7 @@ void server::run()
                         
                         else if (sBuffer.substr(0,4) == "KICK")
                         {
-                            int User = this->getUserBySocket(fds[i].fd);
+                            int User = getUserBySocket(fds[i].fd);
                             try {
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 if (vec.size() < 4)
@@ -664,7 +665,7 @@ void server::run()
                         else if (sBuffer.substr(0, 4) == "PART")
                         {
                             try {
-                                int partUser = this->getUserBySocket(fds[i].fd);
+                                int partUser = getUserBySocket(fds[i].fd);
                                 if (partUser == -1)
                                     throw serverException("User not found");
                                 std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
@@ -680,10 +681,10 @@ void server::run()
                                 {
                                     if (channels[i].getName() == channelName)
                                     {
-                                        this->channels[i].removeMember(users[partUser],1);
+                                        channels[i].removeMember(users[partUser],1);
                                         if (channels[i].getMembers().size() == 0)
                                         {
-                                            this->removeChannel(channels[i]);
+                                            removeChannel(channels[i]);
                                             i--;
                                         }
                                     }
@@ -726,15 +727,15 @@ void server::run()
                                 message = message.substr(1, message.size() - 1);
                             }
                             try {
-                                int sender = this->getUserBySocket(fds[i].fd);
+                                int sender = getUserBySocket(fds[i].fd);
                                 if (sender == -1)
                                     throw serverException("User not found");
                                 for (size_t i = 0; i < receivers.size(); i++)
                                 {
                                     if (receivers[i][0] == '#' || receivers[i][0] == '&')
-                                        this->prvmsgchannel(users[sender], receivers[i], message);
+                                        prvmsgchannel(users[sender], receivers[i], message);
                                     else 
-                                        this->prvmsg(users[sender], receivers[i], message);
+                                        prvmsg(users[sender], receivers[i], message);
                                 }
                             }
                             catch (server::serverException &e)
@@ -757,7 +758,7 @@ void server::run()
                                     break;
                                 }
                             }
-                            int user = this->getUserBySocket(fds[i].fd);
+                            int user = getUserBySocket(fds[i].fd);
                             if (user != -1)
                             {
                                 std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
@@ -881,8 +882,8 @@ void server::addChannel(std::string ChannelName, user user,std::string key)
 
 int server::getUserBySocket(int socket)
 {
-    int usersSize = users.size();
-    for (int i = 0; i < usersSize; i++)
+    size_t usersSize = users.size();
+    for (size_t i = 0; i < usersSize; i++)
     {
         if (users[i].getSocket() == socket)
         {
@@ -919,7 +920,7 @@ server::serverException::~serverException() throw()
 
 void server::prvmsg(user sender, std::string receiver, std::string message)
 {
-    std::vector<user> users = this->getUsers();
+    std::vector<user> users = getUsers();
     std::string reply;
     bool userExists = false;
     for (size_t j = 0; j < users.size(); j++)
