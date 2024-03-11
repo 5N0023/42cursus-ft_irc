@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
         std::cerr << "Usage: " << argv[0] << " <port> <password>\n";
         return -1;
     }
+    signal(SIGPIPE, SIG_IGN);
     try {
         server ircServer(std::stoi(argv[1]), argv[2]);
         ircServer.run();
