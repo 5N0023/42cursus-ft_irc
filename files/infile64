@@ -1,5 +1,0 @@
-PASS password 
-NICK nick64
-USER user64 0 * abc
-JOIN #channel64
-PRIVMSG #channel64 :hello world!

@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 22:32:23 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/11 09:37:51 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void server::run()
     // get the ip address of the server
     serverIP = getLocalIP();
     std::cerr << "serverIP: " << serverIP << std::endl;
-
+    std::string sBuffer;
 
     // Map to store client IP addresses
     std::map<int, std::string> clientIPs;
@@ -160,7 +160,8 @@ void server::run()
                                     std::cerr << "Error: " << e.what() << "\n";
                                 }
                         }
-                        std::string sBuffer = std::string(buffer, bytesRead);
+                        sBuffer.clear();
+                        sBuffer = std::string(buffer, bytesRead);
                         // std::cerr << "asdsd :: " << sBuffer << ":::" << std::endl;
                          if (sBuffer.find('\n') == std::string::npos)
                         {
@@ -178,10 +179,8 @@ void server::run()
                             }
                         }
                         // trim the buffer
-                        if (sBuffer.find("\r\n")!=  std::string::npos)
-                            sBuffer = sBuffer.substr(0, sBuffer.size() -2);
-                        if (sBuffer.find("\n")!=  std::string::npos)
-                            sBuffer = sBuffer.substr(0, sBuffer.size() -1);
+                        sBuffer = sBuffer.substr(0, sBuffer.find('\n') -1);
+                        sBuffer = sBuffer.substr(0, sBuffer.find('\r') -1);
                         std::cerr << "sBuffer: " << sBuffer << std::endl;
                         try {
                             if (sBuffer.substr(0, 4) != "PASS" && this->getUserBySocket(fds[i].fd) != -1 && users[this->getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
@@ -990,7 +989,7 @@ void server::prvmsgchannel(user sender, std::string receiverchannel, std::string
 NICK tamago2
 USER tamago2 0 * tamago2
 PONG 
-
+--+
 :*.freenode.net 696 tamago2 #testing556 k * :You must specify a parameter for the key mode. Syntax: <key>.
 ":" server_ip 696 nick channel char "*" " :You must specify a parameter for the key mode. Syntax: <key>."
 

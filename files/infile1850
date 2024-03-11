@@ -1,5 +1,0 @@
-PASS password 
-NICK nick1850
-USER user1850 0 * abc
-JOIN #channel1850
-PRIVMSG #channel1850 :hello world!

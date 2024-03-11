@@ -1,5 +1,0 @@
-PASS password 
-NICK nick365
-USER user365 0 * abc
-JOIN #channel365
-PRIVMSG #channel365 :hello world!

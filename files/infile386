@@ -1,5 +1,0 @@
-PASS password 
-NICK nick386
-USER user386 0 * abc
-JOIN #channel386
-PRIVMSG #channel386 :hello world!

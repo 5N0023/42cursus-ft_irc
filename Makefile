@@ -6,19 +6,19 @@
 #    By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/18 10:34:59 by hznagui           #+#    #+#              #
-#    Updated: 2024/03/03 18:48:52 by hznagui          ###   ########.fr        #
+#    Updated: 2024/03/10 17:21:44 by hznagui          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
-NAME = server
+NAME = ircserv
 BOTNAME = bot
 
 SERVERIP = "127.0.0.1"
 PORT = 6697
 PASSWORD = "password"
 
-FLAGS = -Wall -Wextra -Werror  -std=c++98 #-fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror  -std=c++98 -fsanitize=address -g
 
 FILE = 	./srcs/main.cpp\
 		./srcs/channel.cpp\

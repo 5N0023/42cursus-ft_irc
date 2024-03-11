@@ -133,7 +133,7 @@ void user::setBuffer(std::string Buffer)
     this->Buffer = Buffer;
 }
 
-std::string user::getBuffer()
+std::string &user::getBuffer()
 {
     return Buffer;
 }

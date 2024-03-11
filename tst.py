@@ -1,12 +1,21 @@
-import os
-import sys
-TMP='''PASS password \r\n'''
-'''NICK nick{0}\r\nUSER user{0} 0 * abc\r\nJOIN #channel{0}\r\nPRIVMSG #channel{0} :hello world!\r\n'''
+from pwn import *
 
 
-for clinet in range(int(sys.argv[1])):
-    cmd = TMP.format(clinet)
-    filename = "files/infile{0}".format(clinet)
-    with open(filename, "w") as fp:
-        fp.write(cmd)
-    os.system("nc 10.12.9.5 6670 < '" + filename + "'")
+
+
+
+for i in range(100):
+    p = remote("localhost", 6670)
+    p.sendline("PASS password")
+    print(p.recvline())
+    p.sendline("NICK nick{0}".format(i))
+    print(p.recvline())
+    p.sendline("USER user{0} 0 * abc".format(i))
+    print(p.recvline())
+    p.sendline("JOIN #channel{0}".format(i))
+    print(p.recvline())
+    p.sendline("PRIVMSG #channel{0} :hello world!".format(i))
+    print(p.recvline())
+    p.sendline("QUIT")
+    print(p.recvline())
+    p.close()

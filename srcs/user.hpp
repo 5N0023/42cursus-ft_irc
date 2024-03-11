@@ -34,7 +34,7 @@ class user
         user(std::string ipAddress, int socket);
         ~user();
         void setBuffer(std::string Buffer);
-        std::string getBuffer();
+        std::string &getBuffer();
         void appendBuffer(std::string Buffer);
         void clearBuffer();
         void setUserName(std::string userName,std::string serverIP);
