@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 21:56:44 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/12 10:49:16 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,14 @@ bool has_char(std::string str)
     }
     return true;
 }
-std::string getreason(std::vector<std::string> vector ,int begin)
+std::string getreason(std::vector<std::string> vector ,size_t begin)
 {
-    std::string str="";
-    vector[begin]=vector[begin].substr(1);
+    std::string str="";    
+            std::cerr <<"ha howa dkhal \n";
+        if (begin == vector.size())
+            return str;
+
+    // vector[begin]=vector[begin].substr(1);
     for(size_t i=begin;i<vector.size();i++)
         str += vector[i]+" ";
     return str;

@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:22 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 22:22:43 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/12 10:39:06 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,8 @@ void channel::removeMember(user member,int index)
             return;
         }
     }
+           
+    
     throw channelException("User not found in channel");
 }
 

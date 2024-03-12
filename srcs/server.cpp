@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/11 09:37:51 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/12 10:39:19 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,7 +351,6 @@ void server::run()
                         {
                             int User = getUserBySocket(fds[i].fd);
                             try {
-                                
                                 std::vector<std::string> vec = split(sBuffer,' ');
                                 // for (size_t f=0;f<vec.size();f++)   
                                 //     std::cerr<<"'"<<vec[f]<<"'";
@@ -451,8 +450,6 @@ void server::run()
                                                         {
                                                             std::string replay = e.what();
                                                             send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                                                            if (replay == ERR_NOSUCHNICK(serverIP,vec[arg]))
-                                                                break;
                                                         }
                                                     }
                                                     if (ret.size() > 1)
@@ -597,8 +594,10 @@ void server::run()
                         {
                             int User = getUserBySocket(fds[i].fd);
                             try {
+                                std::cerr<<"'" << sBuffer <<"'"<< std::endl;
+                                
                                 std::vector<std::string> vec = split(sBuffer,' ');
-                                if (vec.size() < 4)
+                                if (vec.size() < 3)
                                    throw (channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick() ,serverIP,"KICK")));
                                 std::vector<std::string> chan = split(vec[1],',') , target = split(vec[2],',');
                                 for (size_t y = 0; y < chan.size();y++)
@@ -620,9 +619,10 @@ void server::run()
                                                                 user tmp = getUser_str(target[x],channels[it].getMembers());
                                                                 if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
                                                                         throw channel::channelException(ERR_NOSUCHNICK(serverIP,target[x]));
-                                                                else 
+                                                                else
                                                                 {
                                                                     std::string reply = RPL_KICK(users[User].getNick(),users[User].getNick(),serverIP,chan[y],target[x],getreason(vec,3));
+                                                                        std::cerr <<"ha howa dkhal \n";
                                                                     std::vector<user> tmpusers = channels[it].getMembers();
                                                                     for (size_t s = 0 ; s < tmpusers.size() ; s++)
                                                                         send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
