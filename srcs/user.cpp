@@ -14,6 +14,7 @@
 
 user::user(std::string ipAddress, int socket)
 {
+    this->nickGiven = false;
     this->registered = false;
     this->passwordCorrect = false;
     this->ipAddress = ipAddress;
@@ -65,6 +66,7 @@ void user::setUserName(std::string userName,std::string serverIP)
 {
     if (this->userName == "")
     {
+        this->registered = true;
         this->userName = userName;
         std::string reply = RPL_WELCOME(this->getNick(), serverIP);
         send(this->getSocket(), reply.c_str(), reply.size(), 0);
@@ -120,7 +122,7 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
         firstSet = true;
     }
     this->nick = nick;
-    this->registered = true;
+    this->nickGiven = true;
     if (!firstSet)
     {
         std::string reply = RPL_NICKCHANGE(oldNick, this->getNick(), serverIP);
@@ -146,4 +148,9 @@ void user::appendBuffer(std::string Buffer)
 void user::clearBuffer()
 {
     this->Buffer.clear();
+}
+
+bool user::getNickGiven()
+{
+    return nickGiven;
 }

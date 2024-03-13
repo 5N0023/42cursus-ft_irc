@@ -30,6 +30,7 @@ class user
         int socket;
         bool registered;
         bool passwordCorrect;
+        bool nickGiven;
     public:
         user(std::string ipAddress, int socket);
         ~user();
@@ -40,6 +41,7 @@ class user
         void setUserName(std::string userName,std::string serverIP);
         void setNick(std::string nick, std::vector<user> users, std::string serverIP);
         bool getRegistered();
+        bool getNickGiven();
         bool getPasswordCorrect();
         void setPassConfirmed(bool pass);
         // void setIpAddress(std::string ipAddress);

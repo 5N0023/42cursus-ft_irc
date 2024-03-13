@@ -211,9 +211,15 @@ void server::run()
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 continue;
                             }
-                            if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
+                            if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                             {
                                 std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
+                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                continue;
+                            }
+                            if (sBuffer.substr(0, 4) != "USER" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true && users[getUserBySocket(fds[i].fd)].getNickGiven() == true)
+                            {
+                                std::string reply = ERR_NOTREGISTERED(clientIPs[fds[i].fd], serverIP);
                                 send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 continue;
                             }
