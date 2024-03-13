@@ -12,7 +12,6 @@
 
 #pragma once
 
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -24,7 +23,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-struct MatchInfo {
+struct MatchInfo
+{
     std::string league;
     std::string homeTeam;
     std::string awayTeam;

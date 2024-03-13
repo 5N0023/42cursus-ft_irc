@@ -12,7 +12,7 @@
 
 #include "bot.hpp"
 
-bot::bot(std::string server, int serverPort, std::string nick, std::string user, std::string realname,std::string serverPassword)
+bot::bot(std::string server, int serverPort, std::string nick, std::string user, std::string realname, std::string serverPassword)
 {
     this->server = server;
     this->serverPassword = serverPassword;
@@ -23,7 +23,6 @@ bot::bot(std::string server, int serverPort, std::string nick, std::string user,
     socket = ::socket(AF_INET, SOCK_STREAM, 0);
 
     matches = getMatches();
-
 }
 
 void bot::connectToServer()
@@ -44,11 +43,11 @@ void bot::connectToServer()
         throw botException("Invalid address/ Address not supported");
     }
 
-    if (connect(socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
+    if (connect(socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
-       throw botException("Connection failed");
+        throw botException("Connection failed");
     }
-    std::string passwordSend ="PASS "+ serverPassword + " \r\n";
+    std::string passwordSend = "PASS " + serverPassword + " \r\n";
     const char *passwordChar = passwordSend.c_str();
     send(socket, passwordChar, strlen(passwordChar), 0);
     usleep(500);
@@ -71,7 +70,6 @@ void bot::connectToServer()
         throw botException("Error in recv");
 }
 
-
 void bot::listenToServerAndRespond()
 {
     char receive_buffer[1024];
@@ -87,9 +85,9 @@ void bot::listenToServerAndRespond()
                 std::string sender = message.substr(1, message.find("!") - 1);
                 if (matches.size() == 0)
                 {
-                     std::string reply = "PRIVMSG " + sender + " | NO matches for today | \r\n";
-                     send(socket, reply.c_str(), reply.size(), 0);
-                     continue;
+                    std::string reply = "PRIVMSG " + sender + " | NO matches for today | \r\n";
+                    send(socket, reply.c_str(), reply.size(), 0);
+                    continue;
                 }
                 std::string msg = message.substr(message.find(" :") + 2, message.length() - message.find(" :") - 2);
                 for (size_t i = 0; i < matches.size(); i++)
@@ -99,7 +97,7 @@ void bot::listenToServerAndRespond()
                     std::string banner = "PRIVMSG " + sender + " " + "----------------------------------------------------------------------------------------------- " + "\r\n";
                     send(socket, banner.c_str(), banner.size(), 0);
                     usleep(500);
-                    std::string reply = "PRIVMSG " + sender + " | " + matches[i].matchTime.substr(11, 5) + " | -> "+ matches[i].league + " : | " + matches[i].homeTeam + " | vs | " + matches[i].awayTeam + " | " + "\r\n";
+                    std::string reply = "PRIVMSG " + sender + " | " + matches[i].matchTime.substr(11, 5) + " | -> " + matches[i].league + " : | " + matches[i].homeTeam + " | vs | " + matches[i].awayTeam + " | " + "\r\n";
                     send(socket, reply.c_str(), reply.size(), 0);
                     usleep(500);
                     if (i == matches.size() - 1)

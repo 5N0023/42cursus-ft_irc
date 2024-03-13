@@ -62,7 +62,7 @@ user::userException::~userException() throw()
 {
 }
 
-void user::setUserName(std::string userName,std::string serverIP)
+void user::setUserName(std::string userName, std::string serverIP)
 {
     if (this->userName == "")
     {
@@ -85,8 +85,6 @@ void user::setUserName(std::string userName,std::string serverIP)
     }
 }
 
-
-
 bool user::getRegistered()
 {
     return registered;
@@ -102,7 +100,6 @@ void user::setPassConfirmed(bool pass)
     passwordCorrect = pass;
 }
 
-
 void user::setNick(std::string nick, std::vector<user> users, std::string serverIP)
 {
     (void)serverIP;
@@ -117,7 +114,7 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
             // throw userException("Nick already in use");
         }
     }
-    if(this->nick == "")
+    if (this->nick == "")
     {
         firstSet = true;
     }
@@ -128,7 +125,7 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
         std::string reply = RPL_NICKCHANGE(oldNick, this->getNick(), serverIP);
         send(this->getSocket(), reply.c_str(), reply.size(), 0);
     }
-}   
+}
 
 void user::setBuffer(std::string Buffer)
 {

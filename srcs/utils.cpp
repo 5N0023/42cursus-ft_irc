@@ -12,7 +12,8 @@
 
 #include "utils.hpp"
 
-size_t ToSize_T(std::string& str) {
+size_t ToSize_T(std::string &str)
+{
     std::istringstream iss(str);
     size_t result;
     if (!(iss >> result))
@@ -21,26 +22,26 @@ size_t ToSize_T(std::string& str) {
 }
 bool has_char(std::string str)
 {
-    for (size_t i=0; i<str.size();i++)
+    for (size_t i = 0; i < str.size(); i++)
     {
         if (!std::isdigit(str[i]))
             return false;
     }
     return true;
 }
-std::string getreason(std::vector<std::string> vector ,size_t begin)
+std::string getreason(std::vector<std::string> vector, size_t begin)
 {
-    std::string str="";    
-            std::cerr <<"ha howa dkhal \n";
-        if (begin == vector.size())
-            return str;
+    std::string str = "";
+    std::cerr << "ha howa dkhal \n";
+    if (begin == vector.size())
+        return str;
 
     // vector[begin]=vector[begin].substr(1);
-    for(size_t i=begin;i<vector.size();i++)
-        str += vector[i]+" ";
+    for (size_t i = begin; i < vector.size(); i++)
+        str += vector[i] + " ";
     return str;
 }
-user getUser_str(std::string member,std::vector<user> members)
+user getUser_str(std::string member, std::vector<user> members)
 {
     for (size_t i = 0; i < members.size(); i++)
     {
@@ -49,7 +50,7 @@ user getUser_str(std::string member,std::vector<user> members)
             return members[i];
         }
     }
-    return user("error",-1);
+    return user("error", -1);
 }
 std::vector<std::string> splitCommand(std::string command)
 {
@@ -70,7 +71,7 @@ std::vector<std::string> splitCommand(std::string command)
     commandVec.push_back(cmd);
     return commandVec;
 }
-std::map<std::string, std::string> parseChannels(std::string channels,std::string keys)
+std::map<std::string, std::string> parseChannels(std::string channels, std::string keys)
 {
     std::map<std::string, std::string> chans;
     std::vector<std::string> chansVec;
@@ -127,25 +128,28 @@ std::map<std::string, std::string> parseChannels(std::string channels,std::strin
     return chans;
 }
 
-std::vector<std::string> split(const std::string& input, char delimiter) {
+std::vector<std::string> split(const std::string &input, char delimiter)
+{
     std::vector<std::string> result;
     std::istringstream stream(input);
     std::string token;
 
-    while (std::getline(stream, token, delimiter)) {
-        if (token [0] != '\0')
+    while (std::getline(stream, token, delimiter))
+    {
+        if (token[0] != '\0')
             result.push_back(token);
     }
 
     return result;
 }
 
-
-std::string getLocalIP() {
+std::string getLocalIP()
+{
     std::string localIP = "Unable to find IP address";
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock == -1) {
+    if (sock == -1)
+    {
         std::cerr << "Could not create socket.\n";
         return localIP;
     }
@@ -156,24 +160,33 @@ std::string getLocalIP() {
     serv.sin_addr.s_addr = inet_addr("8.8.8.8");
     serv.sin_port = htons(80);
 
-    if (connect(sock, (const struct sockaddr*)&serv, sizeof(serv)) == -1) {
+    if (connect(sock, (const struct sockaddr *)&serv, sizeof(serv)) == -1)
+    {
         std::cerr << "Connect failed.\n";
-    } else {
+    }
+    else
+    {
         // Get the local IP address
         struct sockaddr_in name;
         socklen_t namelen = sizeof(name);
-        if (getsockname(sock, (struct sockaddr*)&name, &namelen) == -1) {
+        if (getsockname(sock, (struct sockaddr *)&name, &namelen) == -1)
+        {
             std::cerr << "getsockname failed.\n";
-        } else {
+        }
+        else
+        {
             char buffer[INET_ADDRSTRLEN];
-            if (inet_ntop(AF_INET, &name.sin_addr, buffer, sizeof(buffer))) {
+            if (inet_ntop(AF_INET, &name.sin_addr, buffer, sizeof(buffer)))
+            {
                 localIP = std::string(buffer);
-            } else {
+            }
+            else
+            {
                 std::cerr << "inet_ntop failed.\n";
             }
         }
     }
 
-    close(sock); 
+    close(sock);
     return localIP;
 }

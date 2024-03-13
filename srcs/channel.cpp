@@ -23,15 +23,15 @@ void channel::eraseInvited(user target)
         }
     }
 }
-void channel::setLimit(size_t LIMIT){limit=LIMIT;}
-size_t channel::getLimit(){return limit;}
+void channel::setLimit(size_t LIMIT) { limit = LIMIT; }
+size_t channel::getLimit() { return limit; }
 
-bool channel::getHasLimit(){return has_limit;}
-void channel::setHasLimit(bool HAS_LIMIT){has_limit=HAS_LIMIT;}
+bool channel::getHasLimit() { return has_limit; }
+void channel::setHasLimit(bool HAS_LIMIT) { has_limit = HAS_LIMIT; }
 
 void channel::AddEraseOperator(user target)
 {
-     for (std::vector<user>::iterator i = operators.begin(); i < operators.end(); i++)
+    for (std::vector<user>::iterator i = operators.begin(); i < operators.end(); i++)
     {
         if (i->getNick() == target.getNick())
         {
@@ -46,31 +46,31 @@ void channel::addInvite(user target)
 {
     for (size_t i = 0; i < invited.size(); i++)
     {
-        if (invited[i]== target.getNick())
+        if (invited[i] == target.getNick())
             return;
     }
     this->invited.push_back(target.getNick());
 }
 
-std::string channel::getTopic(){return topic;}
-void channel::setTopic(std::string Topic){topic=Topic;}
+std::string channel::getTopic() { return topic; }
+void channel::setTopic(std::string Topic) { topic = Topic; }
 
-bool channel::getTopicStrict(){return topic_strict;}
-void channel::setTopicStrict(bool Topic_strict){topic_strict=Topic_strict;}
+bool channel::getTopicStrict() { return topic_strict; }
+void channel::setTopicStrict(bool Topic_strict) { topic_strict = Topic_strict; }
 
-bool channel::getHaskey(){return has_key;}
-void channel::setHaskey(bool Has){has_key=Has;}
+bool channel::getHaskey() { return has_key; }
+void channel::setHaskey(bool Has) { has_key = Has; }
 
-bool channel::getHasTopic(){return has_topic;}
-void channel::setHasTopic(bool Has){has_topic=Has;}
+bool channel::getHasTopic() { return has_topic; }
+void channel::setHasTopic(bool Has) { has_topic = Has; }
 
-bool channel::getMode(){return mode;}
-void channel::setMode(bool Mode){mode = Mode;}
+bool channel::getMode() { return mode; }
+void channel::setMode(bool Mode) { mode = Mode; }
 
 channel::channel(std::string name)
 {
     this->name = name;
-    if(name.length() > 200)
+    if (name.length() > 200)
         throw channelException("Channel name too long");
     if (name[0] != '#')
         throw channelException("Channel name must start with #");
@@ -134,8 +134,6 @@ std::vector<user> &channel::getMembers()
     return members;
 }
 
-
-
 const char *channel::channelException::what(void) const throw()
 {
     return message.c_str();
@@ -146,12 +144,11 @@ channel::channelException::channelException(std::string message)
     this->message = message;
 }
 
-
 channel::channelException::~channelException() throw()
 {
 }
 
-void channel::removeMember(user member,int index)
+void channel::removeMember(user member, int index)
 {
     if (member.getSocket() == -1 && member.getIpAddress() == "error")
         return;
@@ -170,14 +167,15 @@ void channel::removeMember(user member,int index)
         if (members[i].getSocket() == member.getSocket())
         {
             if (index == 1)
-                {std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
-                send(member.getSocket(), reply.c_str(), reply.size(), 0);}
+            {
+                std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
+                send(member.getSocket(), reply.c_str(), reply.size(), 0);
+            }
             members.erase(members.begin() + i);
             return;
         }
     }
-           
-    
+
     throw channelException("User not found in channel");
 }
 
@@ -200,7 +198,7 @@ bool channel::isoperator(user operat)
         if (operators[i].getNick() == operat.getNick())
             return true;
     }
-   
+
     return false;
 }
 

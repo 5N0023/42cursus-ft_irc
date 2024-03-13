@@ -20,10 +20,13 @@ int main(int argc, char *argv[])
         return -1;
     }
     signal(SIGPIPE, SIG_IGN);
-    try {
+    try
+    {
         server ircServer(std::stoi(argv[1]), argv[2]);
         ircServer.run();
-    } catch (server::serverException &e) {
+    }
+    catch (server::serverException &e)
+    {
         std::cerr << "Error in main: " << e.what() << "\n";
         return -1;
     }
