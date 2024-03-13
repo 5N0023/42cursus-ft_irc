@@ -116,20 +116,23 @@ void server::run()
                     int bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
                     if (bytesRead <= 0)
                     {
+                        std::cerr << "Connection closed or error\n";
                         // Connection closed or error
-                        close(fds[i].fd);
-                        clientIPs.erase(fds[i].fd); // Remove IP from map
+                        int fd = fds[i].fd;
+                        close(fd);
+                        clientIPs.erase(fd); // Remove IP from map
                         fds.erase(fds.begin() + i);
                         --i; // Adjust index after erase
                         try
                         {
-                            if (getUserBySocket(fds[i].fd) != -1)
+                            if (getUserBySocket(fd) != -1)
                             {
+                                std::cerr << "User: " << users[getUserBySocket(fd)].getNick() << " has disconnected\n";
                                 for (size_t j = 0; j < channels.size(); j++)
                                 {
-                                    if (channels[j].isMember(users[getUserBySocket(fds[i].fd)]))
+                                    if (channels[j].isMember(users[getUserBySocket(fd)]))
                                     {
-                                        channels[j].removeMember(users[getUserBySocket(fds[i].fd)], 1);
+                                        channels[j].removeMember(users[getUserBySocket(fd)], 1);
                                         if (channels[j].getMembers().size() == 0)
                                         {
                                             removeChannel(channels[j]);
@@ -137,7 +140,7 @@ void server::run()
                                         }
                                     }
                                 }
-                                removeUser(users[getUserBySocket(fds[i].fd)]);
+                                removeUser(users[getUserBySocket(fd)]);
                             }
                         }
                         catch (server::serverException &e)

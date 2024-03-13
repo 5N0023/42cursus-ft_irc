@@ -20,7 +20,6 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
     while ((pos = jsonResponse.find("\"competition\":{", pos)) != std::string::npos)
     {
         MatchInfo match;
-
         size_t leagueStart = jsonResponse.find("\"name\":\"", pos) + 8;
         size_t leagueEnd = jsonResponse.find("\"", leagueStart);
         match.league = jsonResponse.substr(leagueStart, leagueEnd - leagueStart);
@@ -44,7 +43,7 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
         matches.push_back(match);
         pos = matchTimeEnd; // Move past this match for the next iteration
         count++;
-        if (count == 20)
+        if (count == 100)
         {
             break;
         }
@@ -128,6 +127,7 @@ std::vector<MatchInfo> getMatches()
     // system
     std::string path = "https://api.football-data.org/v4/matches";
     std::string response = httpRequest("api.football-data.org", path);
+    std::cerr << response << std::endl;
     std::vector<MatchInfo> matches = extractMatchInfo(response);
     return matches;
 }

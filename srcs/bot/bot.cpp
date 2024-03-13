@@ -20,6 +20,7 @@ bot::bot(std::string server, int serverPort, std::string nick, std::string user,
     this->nick = nick;
     this->user = user;
     this->realname = realname;
+    std::cerr << "Creating socket\n";
     socket = ::socket(AF_INET, SOCK_STREAM, 0);
 
     matches = getMatches();
@@ -61,6 +62,7 @@ void bot::connectToServer()
     std::string message = receive_buffer;
     if (valread > 0)
     {
+        std::cerr << message << std::endl;
         if (message.find("Welcome") == std::string::npos)
             throw botException("Verify if  PASSWORD is correct");
     }
@@ -90,6 +92,7 @@ void bot::listenToServerAndRespond()
                     continue;
                 }
                 std::string msg = message.substr(message.find(" :") + 2, message.length() - message.find(" :") - 2);
+                std::cerr << "matches size : " << matches.size() << std::endl;
                 for (size_t i = 0; i < matches.size(); i++)
                 {
                     if (matches[i].awayTeam.size() == 0 || matches[i].homeTeam.size() == 0 || matches[i].league.size() == 0 || matches[i].matchTime.size() == 0)

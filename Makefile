@@ -70,7 +70,7 @@ fclean: clean
 re : fclean all
 
 run:
-	./server $(PORT) $(PASSWORD) 
+	./ircserv $(PORT) $(PASSWORD) &> serverlog.txt 2>&1 &
 	sleep 1
 	./bot $(SERVERIP) $(PORT) $(PASSWORD) &> botlog.txt 2>&1 &
 

@@ -20,8 +20,11 @@ int main(int argc, char *argv[])
     }
     try
     {
+        std::cerr << "Creating bot\n";
         bot bot(argv[1], std::stoi(argv[2]), "bot", "bot", "bot", argv[3]);
+        std::cerr << "Connecting to server\n";
         bot.connectToServer();
+        std::cerr << "Listening to server and responding\n";
         bot.listenToServerAndRespond();
     }
     catch (bot::botException &e)
