@@ -45,7 +45,7 @@ user getUser_str(std::string member, std::vector<user> members)
 {
     for (size_t i = 0; i < members.size(); i++)
     {
-        if (members[i].getNick() == member)
+        if (members[i].getNick() == member && members[i].getRegistered())
         {
             return members[i];
         }
