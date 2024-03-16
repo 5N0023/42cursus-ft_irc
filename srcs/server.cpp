@@ -235,13 +235,21 @@ void server::run()
                             std::cerr << "Error: " << e.what() << "\n";
                         }
 
+
+
                         if (sBuffer.substr(0, 4) == "PASS")
                             pass(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
 
+
+
+
                         else if (sBuffer.substr(0, 4) == "NICK")
-                        {
                             nick(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
-                        }
+
+
+
+
+
                         else if (sBuffer.substr(0, 4) == "USER")
                         {
                             std::vector<std::string> args = splitCommand(sBuffer);
@@ -261,12 +269,6 @@ void server::run()
                                         args[1] = args[1].substr(0, i);
                                         break;
                                     }
-                                }
-                                // show all fds
-                                std::cerr << "fds[i].fd: " << fds[i].fd << std::endl;
-                                for (size_t j = 0; j < fds.size(); j++)
-                                {
-                                    std::cerr << "fds[" << j << "].fd: " << fds[j].fd << std::endl;
                                 }
                                 if (user != -1)
                                 {
