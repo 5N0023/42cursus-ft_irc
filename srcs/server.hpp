@@ -49,6 +49,8 @@ public:
     void addUser(user newUser);
     void removeUser(user user);
 
+    void pass(int socket, std::string sBuffer, std::string clientIP);
+    void nick(int socket, std::string sBuffer, std::string clientIP);
     void addChannel(std::string ChannelName, user user, std::string key);
     void removeChannel(channel channel);
     void prvmsg(user sender, std::string receiver, std::string message);
