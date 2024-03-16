@@ -15,6 +15,7 @@
 server::server(int Port, std::string password) : password(password)
 {
     port = Port;
+    serverIP = getLocalIP();
     listeningSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listeningSocket < 0)
     {
@@ -58,7 +59,7 @@ void server::run()
     listenFd.events = POLLIN;
     fds.push_back(listenFd);
     // get the ip address of the server
-    serverIP = getLocalIP();
+    
     std::cerr << "serverIP: " << serverIP << std::endl;
     std::string sBuffer;
 
@@ -233,59 +234,16 @@ void server::run()
                         {
                             std::cerr << "Error: " << e.what() << "\n";
                         }
+
                         if (sBuffer.substr(0, 4) == "PASS")
-                        {
-                            try
-                            {
-                                std::vector<std::string> args = splitCommand(sBuffer);
-                                if (args.size() < 2)
-                                {
-                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PASS");
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                    continue;
-                                }
-                                std::cerr << "args[1] which is password : |" << args[1] << "|" << std::endl;
-                                if (args[1] != password)
-                                {
-                                    std::string reply = ERR_PASSWDMISMATCH(clientIPs[fds[i].fd], serverIP);
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                }
-                                else
-                                {
-                                    int user = getUserBySocket(fds[i].fd);
-                                    if (user != -1)
-                                        users[user].setPassConfirmed(true);
-                                }
-                            }
-                            catch (user::userException &e)
-                            {
-                                std::cerr << "Error: " << e.what() << "\n";
-                            }
-                        }
+                            pass(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
 
                         else if (sBuffer.substr(0, 4) == "NICK")
                         {
-                            std::vector<std::string> args = splitCommand(sBuffer);
-                            if (args.size() < 2)
-                            {
-                                std::string reply = ERR_NONICKNAMEGIVEN(clientIPs[fds[i].fd], serverIP);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                continue;
-                            }
-                            try
-                            {
-                                int user = getUserBySocket(fds[i].fd);
-                                if (user != -1)
-                                    users[user].setNick(args[1], users, serverIP);
-                            }
-                            catch (user::userException &e)
-                            {
-                                std::cerr << "Error NICK: " << e.what() << "\n";
-                            }
+                            nick(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
                         }
                         else if (sBuffer.substr(0, 4) == "USER")
                         {
-                            std::cerr << "USER command : " << sBuffer << std::endl;
                             std::vector<std::string> args = splitCommand(sBuffer);
                             if (args.size() < 5)
                             {
@@ -807,7 +765,6 @@ void server::removeUser(user user)
             return;
         }
     }
-    throw serverException("User not found in server\n");
 }
 
 void server::addChannel(std::string ChannelName, user user, std::string key)
@@ -983,6 +940,63 @@ void server::removeChannel(channel channel)
         }
     }
     throw serverException("Channel not found");
+}
+
+void server::pass(int fd, std::string sBuffer, std::string clientIP)
+{
+    try
+    {
+
+        std::vector<std::string> args = splitCommand(sBuffer);
+        int user = getUserBySocket(fd);
+        if (args.size() < 2)
+        {
+            std::string reply = ERR_NEEDMOREPARAMS(clientIP, serverIP, "PASS");
+            send(fd, reply.c_str(), reply.size(), 0);
+            return;
+        }
+        if (users[user].getPasswordCorrect())
+        {
+            std::string reply = ERR_ALREADYREGISTERED(clientIP, serverIP);
+            send(fd, reply.c_str(), reply.size(), 0);
+            return;
+        }
+        if (args[1] != password)
+        {
+            std::string reply = ERR_PASSWDMISMATCH(clientIP, serverIP);
+            send(fd, reply.c_str(), reply.size(), 0);
+        }
+        else
+        {
+            if (user != -1)
+                users[user].setPassConfirmed(true);
+        }
+    }
+    catch (user::userException &e)
+    {
+        std::cerr << "Error: " << e.what() << "\n";
+    }
+}
+
+void server::nick(int fd, std::string sBuffer, std::string clientIP)
+{
+    std::vector<std::string> args = splitCommand(sBuffer);
+    if (args.size() < 2)
+    {
+        std::string reply = ERR_NONICKNAMEGIVEN(clientIP, serverIP);
+        send(fd, reply.c_str(), reply.size(), 0);
+        return;
+    }
+    try
+    {
+        int user = getUserBySocket(fd);
+        if (user != -1)
+            users[user].setNick(args[1], users, serverIP);
+    }
+    catch (user::userException &e)
+    {
+        std::cerr << "Error NICK: " << e.what() << "\n";
+    }
 }
 
 /*
