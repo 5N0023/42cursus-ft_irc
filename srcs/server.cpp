@@ -925,7 +925,7 @@ void server::prvmsg(user sender, std::string receiver, std::string message)
     bool userExists = false;
     for (size_t j = 0; j < users.size(); j++)
     {
-        if (users[j].getNick() == receiver)
+        if (users[j].getNick() == receiver && users[j].getRegistered())
         {
             userExists = true;
             reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receiver, message);
