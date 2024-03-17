@@ -6,7 +6,7 @@
 #    By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/18 10:34:59 by hznagui           #+#    #+#              #
-#    Updated: 2024/03/17 12:29:47 by hznagui          ###   ########.fr        #
+#    Updated: 2024/03/17 14:00:04 by hznagui          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,9 @@ FILE = 	./srcs/main.cpp\
 		./srcs/utils.cpp\
 		./srcs/server.cpp\
 		./srcs/KICK.cpp\
+		./srcs/TOPIC.cpp\
+		./srcs/INVITE.cpp\
+		./srcs/MODE.cpp\
 		
 BOTFILES = ./srcs/bot/bot.cpp\
 		./srcs/bot/main.cpp\
