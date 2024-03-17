@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:36 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 21:58:13 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/17 12:30:44 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ public:
     void stop();
     void addUser(user newUser);
     void removeUser(user user);
-
+    void kick(size_t, std::string, std::vector<struct pollfd>);
     void pass(int socket, std::string sBuffer, std::string clientIP);
     void nick(int socket, std::string sBuffer, std::string clientIP);
     void addChannel(std::string ChannelName, user user, std::string key);
