@@ -74,72 +74,16 @@ void server::run()
             if (fds[i].revents & POLLIN)
             {
                 if (fds[i].fd == listeningSocket)
-                {
-                    try
-                    {
-                        struct sockaddr_in clientAddr;
-                        socklen_t clientAddrLen = sizeof(clientAddr);
-                        int clientSocket = accept(listeningSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
-                        if (clientSocket < 0)
-                        {
-                            throw serverException("Error accepting connection\n");
-                        }
-                        if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
-                        {
-                            throw serverException("Error setting socket to non-blocking\n");
-                        }
+                    newConnections();
 
-                        clientIPs[clientSocket] = inet_ntoa(clientAddr.sin_addr);
-
-                        struct pollfd clientFd;
-                        clientFd.fd = clientSocket;
-                        clientFd.events = POLLIN;
-                        fds.push_back(clientFd);
-                        user newUser(clientIPs[clientSocket], clientSocket);
-                        users.push_back(newUser);
-                    }
-                    catch (server::serverException &e)
-                    {
-                        std::cerr << "Error: " << e.what() << "\n";
-                    }
-                }
                 else
                 {
                     char buffer[1024];
                     int bytesRead = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+                    
                     if (bytesRead <= 0)
-                    {
-                        std::cerr << "Connection closed or error\n";
-                        int fd = fds[i].fd;
-                        close(fd);
-                        clientIPs.erase(fd);
-                        fds.erase(fds.begin() + i);
-                        --i;
-                        try
-                        {
-                            if (getUserBySocket(fd) != -1)
-                            {
-                                std::cerr << "User: " << users[getUserBySocket(fd)].getNick() << " has disconnected\n";
-                                for (size_t j = 0; j < channels.size(); j++)
-                                {
-                                    if (channels[j].isMember(users[getUserBySocket(fd)]))
-                                    {
-                                        channels[j].removeMember(users[getUserBySocket(fd)], 1);
-                                        if (channels[j].getMembers().size() == 0)
-                                        {
-                                            removeChannel(channels[j]);
-                                            j--;
-                                        }
-                                    }
-                                }
-                                removeUser(users[getUserBySocket(fd)]);
-                            }
-                        }
-                        catch (server::serverException &e)
-                        {
-                            std::cerr << "Error: " << e.what() << "\n";
-                        }
-                    }
+                        disconnecting(i);
+
                     else if (bytesRead > 512)
                     {
                         std::string reply = ERR_INPUTTOOLONG(clientIPs[fds[i].fd], serverIP);
@@ -186,13 +130,12 @@ void server::run()
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
-                                if ((sBuffer.substr(0, 4) != "NICK" &&  sBuffer.substr(0, 4) != "USER")&& getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
+                                if ((sBuffer.substr(0, 4) != "NICK" && sBuffer.substr(0, 4) != "USER") && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                                 {
                                     std::string reply = ERR_NOTREGISTERED(clientIPs[fds[i].fd], serverIP);
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
-
                             }
                             catch (user::userException &e)
                             {
@@ -707,7 +650,7 @@ void server::privmsg(std::string sBuffer, int fd, std::string clientIP)
     }
 }
 
-void server::pong(std::string sBuffer,int fd)
+void server::pong(std::string sBuffer, int fd)
 {
     std::string command = sBuffer.substr(0, sBuffer.size() - 1);
     if (command[command.size() - 1] == '\n')
@@ -727,5 +670,70 @@ void server::pong(std::string sBuffer,int fd)
     {
         std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
         send(fd, reply.c_str(), reply.size(), 0);
+    }
+}
+
+void server::newConnections()
+{
+    try
+    {
+        struct sockaddr_in clientAddr;
+        socklen_t clientAddrLen = sizeof(clientAddr);
+        int clientSocket = accept(listeningSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
+        if (clientSocket < 0)
+        {
+            throw serverException("Error accepting connection\n");
+        }
+        if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
+        {
+            throw serverException("Error setting socket to non-blocking\n");
+        }
+
+        clientIPs[clientSocket] = inet_ntoa(clientAddr.sin_addr);
+
+        struct pollfd clientFd;
+        clientFd.fd = clientSocket;
+        clientFd.events = POLLIN;
+        fds.push_back(clientFd);
+        user newUser(clientIPs[clientSocket], clientSocket);
+        users.push_back(newUser);
+    }
+    catch (server::serverException &e)
+    {
+        std::cerr << "Error: " << e.what() << "\n";
+    }
+}
+
+void server::disconnecting(size_t &i)
+{
+    std::cerr << "Connection closed or error\n";
+    int fd = fds[i].fd;
+    close(fd);
+    clientIPs.erase(fd);
+    fds.erase(fds.begin() + i);
+    --i;
+    try
+    {
+        if (getUserBySocket(fd) != -1)
+        {
+            std::cerr << "User: " << users[getUserBySocket(fd)].getNick() << " has disconnected\n";
+            for (size_t j = 0; j < channels.size(); j++)
+            {
+                if (channels[j].isMember(users[getUserBySocket(fd)]))
+                {
+                    channels[j].removeMember(users[getUserBySocket(fd)], 1);
+                    if (channels[j].getMembers().size() == 0)
+                    {
+                        removeChannel(channels[j]);
+                        j--;
+                    }
+                }
+            }
+            removeUser(users[getUserBySocket(fd)]);
+        }
+    }
+    catch (server::serverException &e)
+    {
+        std::cerr << "Error: " << e.what() << "\n";
     }
 }

@@ -49,6 +49,9 @@ public:
     ~server();
     void run();
     void stop();
+
+    void newConnections();
+    void disconnecting(size_t &i);
     void addUser(user newUser);
     void removeUser(user user);
     void Invite(size_t, std::string, std::vector<struct pollfd>);
