@@ -42,6 +42,7 @@ private:
     int listeningSocket;
     std::map<int, std::string> clientIPs;
     std::vector<struct pollfd> fds;
+    struct pollfd listenFd;
 
 public:
     server(int port, std::string password);

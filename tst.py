@@ -1,11 +1,11 @@
-from pwn import *
+import os
+import sys
+TMP='''PASS password\r\nNICK nick{0}\r\nUSER user{0} 0 * abc\r\nJOIN #test\r\nPRIVMSG #test :hello world!\r\n'''
 
-for i in range(100):
-    p = remote("localhost", 6670)
-    p.sendline("PASS a")
-    p.sendline("NICK nick{0}".format(i))
-    p.sendline("USER user{0} 0 * abc".format(i))
-    p.sendline("JOIN #channel{0}".format(i))
-    p.sendline("PRIVMSG #channel{0} :hello world!".format(i))
-    p.sendline("QUIT")
-    p.close()
+
+for clinet in range(int(sys.argv[1])):
+    cmd = TMP.format(clinet)
+    filename = "files/infile{0}".format(clinet)
+    with open(filename, "w") as fp:
+        fp.write(cmd)
+    os.system("nc 127.0.0.1 6697 < '" + filename + "'")

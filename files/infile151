@@ -1,0 +1,5 @@
+PASS password
+NICK nick151
+USER user151 0 * abc
+JOIN #test
+PRIVMSG #test :hello world!

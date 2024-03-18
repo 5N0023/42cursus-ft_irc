@@ -150,6 +150,7 @@ channel::channelException::~channelException() throw()
 
 void channel::removeMember(user member, int index)
 {
+    
     if (member.getSocket() == -1 && member.getIpAddress() == "error")
         return;
     int membersSize = members.size();
@@ -162,18 +163,23 @@ void channel::removeMember(user member, int index)
             break;
         }
     }
+    int a = -1;
     for (int i = 0; i < membersSize; i++)
     {
         if (members[i].getSocket() == member.getSocket())
         {
-            if (index == 1)
-            {
-                std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
-                send(member.getSocket(), reply.c_str(), reply.size(), 0);
-            }
-            members.erase(members.begin() + i);
-            return;
+            a = i;
         }
+        if (index == 1)
+        {
+            std::string reply = RPL_YOUPART(member.getNick(), member.getIpAddress(), member.getUserName(), name);
+            send(members[i].getSocket(), reply.c_str(), reply.size(), 0);
+        }
+    }
+    if (a != -1)
+    {
+        members.erase(members.begin() + a);
+        return;
     }
 
     throw channelException("User not found in channel");
