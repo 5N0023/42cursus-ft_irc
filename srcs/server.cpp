@@ -171,10 +171,8 @@ void server::run()
                                     users[getUserBySocket(fds[i].fd)].clearBuffer();
                                 }
                             }
-                            // trim the buffer
                             sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
                             sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
-                            std::cerr << "sBuffer: " << sBuffer << std::endl;
                             if (sBuffer.substr(0, 4) == "QUIT")
                             {
                                 quit(fds[i].fd, i);
@@ -188,18 +186,13 @@ void server::run()
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
-                                if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
-                                {
-                                    std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                    continue;
-                                }
-                                if (sBuffer.substr(0, 4) != "USER" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true && users[getUserBySocket(fds[i].fd)].getNickGiven() == true)
+                                if ((sBuffer.substr(0, 4) != "NICK" &&  sBuffer.substr(0, 4) != "USER")&& getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                                 {
                                     std::string reply = ERR_NOTREGISTERED(clientIPs[fds[i].fd], serverIP);
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
+
                             }
                             catch (user::userException &e)
                             {

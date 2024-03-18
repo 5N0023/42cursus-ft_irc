@@ -67,16 +67,20 @@ void user::setUserName(std::string userName, std::string serverIP)
 {
     if (this->userName == "")
     {
-        this->registered = true;
+        if(this->getNickGiven() == true)
+        {
+            std::string reply = RPL_WELCOME(this->getNick(), serverIP);
+            send(this->getSocket(), reply.c_str(), reply.size(), 0);
+            std::string reply2 = RPL_YOURHOST(this->getNick(), serverIP);
+            send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
+            std::string reply3 = RPL_CREATED(this->getNick(), serverIP);
+            send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
+            std::string reply4 = RPL_MYINFO(this->getNick(), serverIP);
+            send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+            this->registered = true;
+        }
         this->userName = userName;
-        std::string reply = RPL_WELCOME(this->getNick(), serverIP);
-        send(this->getSocket(), reply.c_str(), reply.size(), 0);
-        std::string reply2 = RPL_YOURHOST(this->getNick(), serverIP);
-        send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
-        std::string reply3 = RPL_CREATED(this->getNick(), serverIP);
-        send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
-        std::string reply4 = RPL_MYINFO(this->getNick(), serverIP);
-        send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+       
     }
     else
     {
@@ -121,6 +125,18 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
     }
     this->nick = nick;
     this->nickGiven = true;
+    if (this->getUserName() != "" && firstSet)
+    {
+        std::string reply = RPL_WELCOME(this->getNick(), serverIP);
+        send(this->getSocket(), reply.c_str(), reply.size(), 0);
+        std::string reply2 = RPL_YOURHOST(this->getNick(), serverIP);
+        send(this->getSocket(), reply2.c_str(), reply2.size(), 0);
+        std::string reply3 = RPL_CREATED(this->getNick(), serverIP);
+        send(this->getSocket(), reply3.c_str(), reply3.size(), 0);
+        std::string reply4 = RPL_MYINFO(this->getNick(), serverIP);
+        send(this->getSocket(), reply4.c_str(), reply4.size(), 0);
+        this->registered = true;
+    }
     if (!firstSet)
     {
         std::string reply = RPL_NICKCHANGE(oldNick, this->getNick(), serverIP);
