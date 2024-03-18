@@ -54,7 +54,6 @@ server::~server()
 void server::run()
 {
 
-    
     listenFd.fd = listeningSocket;
     listenFd.events = POLLIN;
     fds.push_back(listenFd);
@@ -62,10 +61,9 @@ void server::run()
     std::cerr << "serverIP: " << serverIP << std::endl;
     std::string sBufferAll;
 
-
     while (true)
     {
-        int ret = poll(fds.data(), fds.size(), -1); 
+        int ret = poll(fds.data(), fds.size(), -1);
         if (ret < 0)
         {
             throw serverException("Error on poll()\n");
@@ -230,7 +228,6 @@ void server::run()
                             else if (sBuffer.substr(0, 4) == "KICK")
                                 Kick(i, sBuffer, fds);
 
-
                             else if (sBuffer.substr(0, 4) == "PART")
                             {
                                 try
@@ -379,7 +376,7 @@ void server::addChannel(std::string ChannelName, user user, std::string key)
 {
     (void)key;
     bool channelExists = false;
-    if (ChannelName[0] != '#' && ChannelName[0] != '&')
+    if ((ChannelName[0] != '#' && ChannelName[0] != '&') || ChannelName.length() > 64)
     {
         std::string reply = ERR_BADCHANNELNAME(user.getNick(), user.getIpAddress(), ChannelName);
         send(user.getSocket(), reply.c_str(), reply.size(), 0);
@@ -603,6 +600,30 @@ void server::nick(int fd, std::string sBuffer, std::string clientIP)
     }
     try
     {
+        if (args[1][0] == ':')
+            args[1] = args[1].substr(1, args[1].size() - 1);
+        if (args[1].size() > 9 || (isalpha(args[1][0]) == 0 && args[1][0] != '_' && args[1][0] != '[' && args[1][0] != ']' && args[1][0] != '\\' && args[1][0] != '`' && args[1][0] != '^' && args[1][0] != '{' && args[1][0] != '}' && args[1][0] != '|' && args[1][0] != '-'))
+        {
+            std::string reply = ERR_ERRONEUSNICKNAME(clientIP, serverIP);
+            send(fd, reply.c_str(), reply.size(), 0);
+            return;
+        }
+        for (size_t i = 1; i < args[1].size(); i++)
+        {
+            if (isalnum(args[1][i]) == 0 && args[1][i] != '_' && args[1][i] != '[' && args[1][i] != ']' && args[1][i] != '\\' && args[1][i] != '`' && args[1][i] != '^' && args[1][i] != '{' && args[1][i] != '}' && args[1][i] != '|' && args[1][i] != '-')
+            {
+                std::string reply = ERR_ERRONEUSNICKNAME(clientIP, serverIP);
+                send(fd, reply.c_str(), reply.size(), 0);
+                return;
+            }
+        }
+        if (args[1].size() == 0)
+        {
+            std::cerr << "Error: " << args[1] << "\n";
+            std::string reply = ERR_NONICKNAMEGIVEN(clientIP, serverIP);
+            send(fd, reply.c_str(), reply.size(), 0);
+            return;
+        }
         int user = getUserBySocket(fd);
         if (user != -1)
             users[user].setNick(args[1], users, serverIP);

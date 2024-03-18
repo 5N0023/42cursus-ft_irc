@@ -26,6 +26,7 @@ user::user(std::string ipAddress, int socket)
 
 user::~user()
 {
+    
 }
 
 std::string user::getUserName()

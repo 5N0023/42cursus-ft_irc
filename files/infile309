@@ -1,5 +1,0 @@
-PASS password
-NICK nick309
-USER user309 0 * abc
-JOIN #test
-PRIVMSG #test :hello world!

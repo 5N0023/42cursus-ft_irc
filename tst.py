@@ -1,5 +1,6 @@
 import os
 import sys
+from time import sleep
 TMP='''PASS password\r\nNICK nick{0}\r\nUSER user{0} 0 * abc\r\nJOIN #test\r\nPRIVMSG #test :hello world!\r\n'''
 
 
