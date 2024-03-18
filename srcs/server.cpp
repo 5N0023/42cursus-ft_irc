@@ -59,9 +59,9 @@ void server::run()
     listenFd.events = POLLIN;
     fds.push_back(listenFd);
     // get the ip address of the server
-    
+
     std::cerr << "serverIP: " << serverIP << std::endl;
-    std::string sBuffer;
+    std::string sBufferAll;
 
     // Map to store client IP addresses
     std::map<int, std::string> clientIPs;
@@ -156,579 +156,580 @@ void server::run()
                     }
                     else
                     {
-                        sBuffer.clear();
-                        sBuffer = std::string(buffer, bytesRead);
-                        if (sBuffer.find('\n') == std::string::npos)
+                        sBufferAll.clear();
+                        sBufferAll = std::string(buffer, bytesRead);
+                        std::vector<std::string> allCommmands = split(sBufferAll, '\n');
+                        for (size_t d = 0; d < allCommmands.size(); d++)
                         {
-                            if (getUserBySocket(fds[i].fd) != -1)
-                                users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
-                            continue;
-                        }
-                        else
-                        {
-                            if (getUserBySocket(fds[i].fd) != -1)
+                            std::string sBuffer = allCommmands[d];
+                            if (d <= allCommmands.size() - 1)
+                                sBuffer += '\n';
+                            if (d == allCommmands.size() - 1 && sBufferAll[sBufferAll.size() - 1] != '\n')
+                                sBuffer = sBuffer.substr(0, sBuffer.size() - 1);
+                            std::cerr << "sBuffer: " << sBuffer << std::endl;
+                            if (sBuffer.find('\n') == std::string::npos)
                             {
-                                users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
-                                sBuffer = users[getUserBySocket(fds[i].fd)].getBuffer();
-                                users[getUserBySocket(fds[i].fd)].clearBuffer();
+                                if (getUserBySocket(fds[i].fd) != -1)
+                                    users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                                continue;
                             }
-                        }
-                        // trim the buffer
-                        sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
-                        sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
-                        std::cerr << "sBuffer: " << sBuffer << std::endl;
-                        if (sBuffer.substr(0, 4) == "QUIT")
-                        {
-                            try
+                            else
                             {
-                                int user = getUserBySocket(fds[i].fd);
-                                close(fds[i].fd);
-                                clientIPs.erase(fds[i].fd);
-                                fds.erase(fds.begin() + i);
-                                --i;
-                                if (user != -1)
+                                if (getUserBySocket(fds[i].fd) != -1)
                                 {
-                                    for (size_t j = 0; j < channels.size(); j++)
+                                    users[getUserBySocket(fds[i].fd)].appendBuffer(sBuffer);
+                                    sBuffer = users[getUserBySocket(fds[i].fd)].getBuffer();
+                                    users[getUserBySocket(fds[i].fd)].clearBuffer();
+                                }
+                            }
+                            // trim the buffer
+                            sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
+                            sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
+                            std::cerr << "sBuffer: " << sBuffer << std::endl;
+                            if (sBuffer.substr(0, 4) == "QUIT")
+                            {
+                                try
+                                {
+                                    int user = getUserBySocket(fds[i].fd);
+                                    close(fds[i].fd);
+                                    clientIPs.erase(fds[i].fd);
+                                    fds.erase(fds.begin() + i);
+                                    --i;
+                                    if (user != -1)
                                     {
-                                        if (channels[j].isMember(users[user]))
+                                        for (size_t j = 0; j < channels.size(); j++)
                                         {
-                                            channels[j].removeMember(users[user], 1);
-                                            if (channels[j].getMembers().size() == 0)
+                                            if (channels[j].isMember(users[user]))
                                             {
-                                                removeChannel(channels[j]);
-                                                j--;
+                                                channels[j].removeMember(users[user], 1);
+                                                if (channels[j].getMembers().size() == 0)
+                                                {
+                                                    removeChannel(channels[j]);
+                                                    j--;
+                                                }
                                             }
                                         }
+                                        removeUser(users[user]);
                                     }
-                                    removeUser(users[user]);
                                 }
-                            }
-                            catch (server::serverException &e)
-                            {
-                                std::cerr << "Error: " << e.what() << "\n";
-                            }
-                            continue;
-                        }
-                        try
-                        {
-                            if (sBuffer.substr(0, 4) != "PASS" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
-                            {
-                                std::string reply = ERR_NEEDPASS(clientIPs[fds[i].fd], serverIP);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                continue;
-                            }
-                            if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
-                            {
-                                std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                continue;
-                            }
-                            if (sBuffer.substr(0, 4) != "USER" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true && users[getUserBySocket(fds[i].fd)].getNickGiven() == true)
-                            {
-                                std::string reply = ERR_NOTREGISTERED(clientIPs[fds[i].fd], serverIP);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                continue;
-                            }
-                        }
-                        catch (user::userException &e)
-                        {
-                            std::cerr << "Error: " << e.what() << "\n";
-                        }
-
-
-
-                        if (sBuffer.substr(0, 4) == "PASS")
-                            pass(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
-
-
-
-
-                        else if (sBuffer.substr(0, 4) == "NICK")
-                            nick(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
-
-
-
-
-
-                        else if (sBuffer.substr(0, 4) == "USER")
-                        {
-                            std::vector<std::string> args = splitCommand(sBuffer);
-                            if (args.size() < 5)
-                            {
-                                std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "USER");
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                catch (server::serverException &e)
+                                {
+                                    std::cerr << "Error: " << e.what() << "\n";
+                                }
                                 continue;
                             }
                             try
                             {
-                                int user = getUserBySocket(fds[i].fd);
-                                for (size_t i = 0; i < args[1].size(); i++)
+                                if (sBuffer.substr(0, 4) != "PASS" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == false)
                                 {
-                                    if (args[1][i] == ' ')
-                                    {
-                                        args[1] = args[1].substr(0, i);
-                                        break;
-                                    }
+                                    std::string reply = ERR_NEEDPASS(clientIPs[fds[i].fd], serverIP);
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
                                 }
-                                if (user != -1)
+                                if (sBuffer.substr(0, 4) != "NICK" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getNickGiven() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true)
                                 {
-                                    users[user].setUserName(args[1], serverIP);
+                                    std::string reply = ERR_NEEDNICK(clientIPs[fds[i].fd], serverIP);
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
+                                }
+                                if (sBuffer.substr(0, 4) != "USER" && getUserBySocket(fds[i].fd) != -1 && users[getUserBySocket(fds[i].fd)].getRegistered() == false && users[getUserBySocket(fds[i].fd)].getPasswordCorrect() == true && users[getUserBySocket(fds[i].fd)].getNickGiven() == true)
+                                {
+                                    std::string reply = ERR_NOTREGISTERED(clientIPs[fds[i].fd], serverIP);
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
                                 }
                             }
                             catch (user::userException &e)
                             {
-                                std::cerr << "Error USER: " << e.what() << "\n";
+                                std::cerr << "Error: " << e.what() << "\n";
                             }
-                        }
-                        else if (sBuffer.substr(0, 4) == "JOIN")
-                        { // add condition of checking if the channel is invite only && check if it have password or not
-                            try
+
+                            if (sBuffer.substr(0, 4) == "PASS")
+                                pass(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
+
+                            else if (sBuffer.substr(0, 4) == "NICK")
+                                nick(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
+
+                            else if (sBuffer.substr(0, 4) == "USER")
                             {
-                                int joinedUser = getUserBySocket(fds[i].fd);
                                 std::vector<std::string> args = splitCommand(sBuffer);
-                                if (args.size() < 2)
+                                if (args.size() < 5)
                                 {
-                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "JOIN");
+                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "USER");
                                     send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                     continue;
                                 }
-                                std::string channelsName = args[1];
-                                std::string keys = args[2];
-                                std::map<std::string, std::string> chans = parseChannels(channelsName, keys);
-                                std::map<std::string, std::string>::iterator it = chans.begin();
-                                while (it != chans.end())
+                                try
                                 {
-                                    addChannel(it->first, users[joinedUser], it->second);
-                                    it++;
+                                    int user = getUserBySocket(fds[i].fd);
+                                    for (size_t i = 0; i < args[1].size(); i++)
+                                    {
+                                        if (args[1][i] == ' ')
+                                        {
+                                            args[1] = args[1].substr(0, i);
+                                            break;
+                                        }
+                                    }
+                                    if (user != -1)
+                                    {
+                                        users[user].setUserName(args[1], serverIP);
+                                    }
+                                }
+                                catch (user::userException &e)
+                                {
+                                    std::cerr << "Error USER: " << e.what() << "\n";
                                 }
                             }
-                            catch (channel::channelException &e)
-                            {
-                                std::cerr << "Error JOIN: " << e.what() << "\n";
-                            }
-                        }
-
-                        // my starting
-                        else if (sBuffer.substr(0, 4) == "MODE")
-                        {
-                            int User = getUserBySocket(fds[i].fd);
-                            try
-                            {
-                                std::vector<std::string> vec = split(sBuffer, ' ');
-                                // for (size_t f=0;f<vec.size();f++)
-                                //     std::cerr<<"'"<<vec[f]<<"'";
-                                //     std::cerr<<vec.size();
-                                // std::cerr<<std::endl;
-                                if (vec.size() < 3)
-                                    throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "MODE")));
-                                size_t it = 0;
-                                for (; it < channels.size(); it++)
+                            else if (sBuffer.substr(0, 4) == "JOIN")
+                            { // add condition of checking if the channel is invite only && check if it have password or not
+                                try
                                 {
-                                    if (channels[it].getName() == vec[1])
+                                    int joinedUser = getUserBySocket(fds[i].fd);
+                                    std::vector<std::string> args = splitCommand(sBuffer);
+                                    if (args.size() < 2)
                                     {
-                                        if (channels[it].isMember(users[User]))
+                                        std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "JOIN");
+                                        send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                        continue;
+                                    }
+                                    std::string channelsName = args[1];
+                                    std::string keys = args[2];
+                                    std::map<std::string, std::string> chans = parseChannels(channelsName, keys);
+                                    std::map<std::string, std::string>::iterator it = chans.begin();
+                                    while (it != chans.end())
+                                    {
+                                        addChannel(it->first, users[joinedUser], it->second);
+                                        it++;
+                                    }
+                                }
+                                catch (channel::channelException &e)
+                                {
+                                    std::cerr << "Error JOIN: " << e.what() << "\n";
+                                }
+                            }
+
+                            // my starting
+                            else if (sBuffer.substr(0, 4) == "MODE")
+                            {
+                                int User = getUserBySocket(fds[i].fd);
+                                try
+                                {
+                                    std::vector<std::string> vec = split(sBuffer, ' ');
+                                    // for (size_t f=0;f<vec.size();f++)
+                                    //     std::cerr<<"'"<<vec[f]<<"'";
+                                    //     std::cerr<<vec.size();
+                                    // std::cerr<<std::endl;
+                                    if (vec.size() < 3)
+                                        throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "MODE")));
+                                    size_t it = 0;
+                                    for (; it < channels.size(); it++)
+                                    {
+                                        if (channels[it].getName() == vec[1])
                                         {
-                                            if (channels[it].isoperator(users[User]))
+                                            if (channels[it].isMember(users[User]))
                                             {
-                                                // std::cerr << "ha howa dkhal"<<std::endl;
-                                                if (vec[2][0] != '+' && vec[2][0] != '-')
-                                                    throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(), serverIP, channels[it].getName(), vec[0][0]));
-                                                bool positive = (vec[2][0] == '-' ? false : true);
-                                                std::string ret;
-                                                size_t arg = 3;
-                                                ret += vec[2][0];
-                                                for (size_t k = 1; k < vec[2].size(); k++)
+                                                if (channels[it].isoperator(users[User]))
                                                 {
-                                                    try
+                                                    // std::cerr << "ha howa dkhal"<<std::endl;
+                                                    if (vec[2][0] != '+' && vec[2][0] != '-')
+                                                        throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(), serverIP, channels[it].getName(), vec[0][0]));
+                                                    bool positive = (vec[2][0] == '-' ? false : true);
+                                                    std::string ret;
+                                                    size_t arg = 3;
+                                                    ret += vec[2][0];
+                                                    for (size_t k = 1; k < vec[2].size(); k++)
                                                     {
-                                                        if (vec[2][k] == 'i')
+                                                        try
                                                         {
-                                                            if (positive != channels[it].getMode())
+                                                            if (vec[2][k] == 'i')
                                                             {
-                                                                channels[it].setMode(positive);
-                                                                ret += 'i';
-                                                            }
-                                                        }
-                                                        else if (vec[2][k] == 't')
-                                                        {
-                                                            if (positive != channels[it].getTopicStrict())
-                                                            {
-                                                                channels[it].setTopicStrict(positive);
-                                                                ret += 't';
-                                                            }
-                                                        }
-                                                        else if (vec[2][k] == 'k')
-                                                        {
-                                                            if (!positive && channels[it].getHaskey())
-                                                            {
-                                                                channels[it].setKey("");
-                                                                ret += 'k';
-                                                                channels[it].setHaskey(positive);
-                                                            }
-                                                            else if (vec.size() > arg && (positive && !channels[it].getHaskey()))
-                                                            {
-                                                                channels[it].setKey(vec[arg]);
-                                                                ret += 'k';
-                                                                arg++;
-                                                                channels[it].setHaskey(positive);
-                                                            }
-                                                        }
-                                                        else if (vec[2][k] == 'o')
-                                                        {
-                                                            if (vec.size() > arg)
-                                                            {
-                                                                user tmp = getUser_str(vec[arg], users);
-                                                                if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
-                                                                    throw channel::channelException(ERR_NOSUCHNICK(serverIP, vec[arg]));
-                                                                else if (!channels[it].isMember(tmp) || (channels[it].isoperator(tmp) && positive))
+                                                                if (positive != channels[it].getMode())
                                                                 {
+                                                                    channels[it].setMode(positive);
+                                                                    ret += 'i';
                                                                 }
-                                                                else
+                                                            }
+                                                            else if (vec[2][k] == 't')
+                                                            {
+                                                                if (positive != channels[it].getTopicStrict())
                                                                 {
-                                                                    channels[it].AddEraseOperator(tmp);
-                                                                    ret += 'o';
+                                                                    channels[it].setTopicStrict(positive);
+                                                                    ret += 't';
+                                                                }
+                                                            }
+                                                            else if (vec[2][k] == 'k')
+                                                            {
+                                                                if (!positive && channels[it].getHaskey())
+                                                                {
+                                                                    channels[it].setKey("");
+                                                                    ret += 'k';
+                                                                    channels[it].setHaskey(positive);
+                                                                }
+                                                                else if (vec.size() > arg && (positive && !channels[it].getHaskey()))
+                                                                {
+                                                                    channels[it].setKey(vec[arg]);
+                                                                    ret += 'k';
+                                                                    arg++;
+                                                                    channels[it].setHaskey(positive);
+                                                                }
+                                                            }
+                                                            else if (vec[2][k] == 'o')
+                                                            {
+                                                                if (vec.size() > arg)
+                                                                {
+                                                                    user tmp = getUser_str(vec[arg], users);
+                                                                    if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP, vec[arg]));
+                                                                    else if (!channels[it].isMember(tmp) || (channels[it].isoperator(tmp) && positive))
+                                                                    {
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        channels[it].AddEraseOperator(tmp);
+                                                                        ret += 'o';
+                                                                        arg++;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else if (vec[2][k] == 'l')
+                                                            {
+                                                                if (positive && vec.size() > arg && has_char(vec[arg]) && (channels[it].getLimit() != ToSize_T(vec[arg]) || !channels[it].getHasLimit()))
+                                                                {
+                                                                    channels[it].setHasLimit(positive);
+                                                                    channels[it].setLimit(ToSize_T(vec[arg]));
+                                                                    ret += 'l';
                                                                     arg++;
                                                                 }
+                                                                else if (!positive && channels[it].getHasLimit())
+                                                                {
+                                                                    channels[it].setHasLimit(positive);
+                                                                    ret += 'l';
+                                                                }
                                                             }
+                                                            else
+                                                                throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(), serverIP, channels[it].getName(), vec[2][k]));
                                                         }
-                                                        else if (vec[2][k] == 'l')
+                                                        catch (channel::channelException &e)
                                                         {
-                                                            if (positive && vec.size() > arg && has_char(vec[arg]) && (channels[it].getLimit() != ToSize_T(vec[arg]) || !channels[it].getHasLimit()))
-                                                            {
-                                                                channels[it].setHasLimit(positive);
-                                                                channels[it].setLimit(ToSize_T(vec[arg]));
-                                                                ret += 'l';
-                                                                arg++;
-                                                            }
-                                                            else if (!positive && channels[it].getHasLimit())
-                                                            {
-                                                                channels[it].setHasLimit(positive);
-                                                                ret += 'l';
-                                                            }
+                                                            std::string replay = e.what();
+                                                            send(fds[i].fd, replay.c_str(), replay.size(), 0);
                                                         }
-                                                        else
-                                                            throw channel::channelException(ERR_UNKNOWNMODE(users[User].getNick(), serverIP, channels[it].getName(), vec[2][k]));
                                                     }
-                                                    catch (channel::channelException &e)
+                                                    if (ret.size() > 1)
                                                     {
-                                                        std::string replay = e.what();
-                                                        send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                        if (arg != 3)
+                                                        {
+                                                            for (size_t hh = 3; arg != hh; hh++)
+                                                                ret += +" " + vec[hh];
+                                                        }
+                                                        std::vector<user> tmpusers = channels[it].getMembers();
+                                                        std::string reply = RPL_CHANNELMODEIS(users[User].getNick(), serverIP, channels[it].getName(), ret);
+                                                        for (size_t s = 0; s < tmpusers.size(); s++)
+                                                            send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
                                                     }
                                                 }
-                                                if (ret.size() > 1)
+                                                else
+                                                    throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
+                                            }
+                                            else
+                                                throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
+                                            break;
+                                        }
+                                    }
+                                    if (it == channels.size())
+                                        throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick()));
+                                }
+                                catch (channel::channelException &e)
+                                {
+                                    std::string replay = e.what();
+                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                }
+                            }
+                            else if (sBuffer.substr(0, 5) == "TOPIC")
+                            {
+                                int User = getUserBySocket(fds[i].fd);
+                                try
+                                {
+                                    std::vector<std::string> vec = split(sBuffer, ' ');
+                                    if (vec.size() < 2)
+                                        throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "TOPIC")));
+                                    if (vec.size() != 2 && vec[2][0] == ':')
+                                        vec[2] = vec[2].substr(1);
+                                    size_t it = 0;
+                                    for (; it < channels.size(); it++)
+                                    {
+                                        if (channels[it].getName() == vec[1])
+                                        {
+                                            if (channels[it].isMember(users[User]))
+                                            {
+                                                if (vec.size() == 2)
                                                 {
-                                                    if (arg != 3)
-                                                    {
-                                                        for (size_t hh = 3; arg != hh; hh++)
-                                                            ret += +" " + vec[hh];
-                                                    }
+                                                    if (channels[it].getHasTopic() == false)
+                                                        throw channel::channelException(RPL_NOTOPIC(serverIP, channels[it].getName(), users[User].getNick()));
+                                                    std::string replay = RPL_TOPICDISPLAY(serverIP, users[User].getNick(), channels[it].getName(), channels[it].getTopic());
+                                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                }
+                                                else if (channels[it].isoperator(users[User]) || !channels[it].getTopicStrict())
+                                                {
+                                                    std::string tmp;
+                                                    for (size_t h = 2; h < vec.size(); h++)
+                                                        tmp += " " + vec[h];
+                                                    channels[it].setTopic(tmp);
+                                                    channels[it].setHasTopic(true);
                                                     std::vector<user> tmpusers = channels[it].getMembers();
-                                                    std::string reply = RPL_CHANNELMODEIS(users[User].getNick(), serverIP, channels[it].getName(), ret);
+                                                    std::string reply = RPL_SETTOPIC(users[User].getNick(), serverIP, channels[it].getName(), tmp);
                                                     for (size_t s = 0; s < tmpusers.size(); s++)
                                                         send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
                                                 }
-                                            }
-                                            else
-                                                throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
-                                        }
-                                        else
-                                            throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
-                                        break;
-                                    }
-                                }
-                                if (it == channels.size())
-                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick()));
-                            }
-                            catch (channel::channelException &e)
-                            {
-                                std::string replay = e.what();
-                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                            }
-                        }
-                        else if (sBuffer.substr(0, 5) == "TOPIC")
-                        {
-                            int User = getUserBySocket(fds[i].fd);
-                            try
-                            {
-                                std::vector<std::string> vec = split(sBuffer, ' ');
-                                if (vec.size() < 2)
-                                    throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "TOPIC")));
-                                if (vec.size() != 2 && vec[2][0] == ':')
-                                    vec[2] = vec[2].substr(1);
-                                size_t it = 0;
-                                for (; it < channels.size(); it++)
-                                {
-                                    if (channels[it].getName() == vec[1])
-                                    {
-                                        if (channels[it].isMember(users[User]))
-                                        {
-                                            if (vec.size() == 2)
-                                            {
-                                                if (channels[it].getHasTopic() == false)
-                                                    throw channel::channelException(RPL_NOTOPIC(serverIP, channels[it].getName(), users[User].getNick()));
-                                                std::string replay = RPL_TOPICDISPLAY(serverIP, users[User].getNick(), channels[it].getName(), channels[it].getTopic());
-                                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                                            }
-                                            else if (channels[it].isoperator(users[User]) || !channels[it].getTopicStrict())
-                                            {
-                                                std::string tmp;
-                                                for (size_t h = 2; h < vec.size(); h++)
-                                                    tmp += " " + vec[h];
-                                                channels[it].setTopic(tmp);
-                                                channels[it].setHasTopic(true);
-                                                std::vector<user> tmpusers = channels[it].getMembers();
-                                                std::string reply = RPL_SETTOPIC(users[User].getNick(), serverIP, channels[it].getName(), tmp);
-                                                for (size_t s = 0; s < tmpusers.size(); s++)
-                                                    send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
-                                            }
-                                            else
-                                                throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
-                                        }
-                                        else
-                                            throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
-                                        break;
-                                    }
-                                }
-                                if (it == channels.size())
-                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick())); // khesni ne3raf channel li jani mena msg
-                            }
-                            catch (channel::channelException &e)
-                            {
-                                std::string replay = e.what();
-                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                            }
-                        }
-                        else if (sBuffer.substr(0, 6) == "INVITE")
-                        {
-                            int User = getUserBySocket(fds[i].fd);
-                            try
-                            {
-                                std::vector<std::string> vec = split(sBuffer, ' ');
-                                if (vec.size() < 3)
-                                    throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "INVITE")));
-                                if (vec[2][0] == ':')
-                                    vec[2] = vec[2].substr(1);
-                                size_t it = 0;
-                                for (; it < channels.size(); it++)
-                                {
-                                    if (channels[it].getName() == vec[2])
-                                    {
-                                        if (channels[it].isMember(users[User]))
-                                        {
-                                            if (channels[it].isoperator(users[User]))
-                                            {
-                                                user tmp1 = getUser_str(vec[1], users);
-                                                if (tmp1.getSocket() == -1 && tmp1.getIpAddress() == "error")
-                                                    throw channel::channelException(ERR_NOSUCHNICK(serverIP, vec[1]));
                                                 else
-                                                {
-                                                    user tmp = getUser_str(vec[1], channels[it].getMembers());
-                                                    if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
-                                                    {
-                                                        std::string reply = RPL_INVITE(users[User].getNick(), users[User].getNick(), serverIP, vec[1], vec[2]);
-                                                        channels[it].addInvite(getUser_str(vec[1], users));
-                                                        send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
-                                                    }
-                                                    else
-                                                        throw channel::channelException(ERR_USERONCHANNEL(serverIP, vec[2], vec[1]));
-                                                }
+                                                    throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
                                             }
                                             else
-                                                throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
+                                                throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
+                                            break;
                                         }
-                                        else
-                                            throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
-                                        break;
                                     }
+                                    if (it == channels.size())
+                                        throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick())); // khesni ne3raf channel li jani mena msg
                                 }
-                                if (it == channels.size())
-                                    throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[2], users[User].getNick())); // khesni ne3raf channel li jani mena msg
-                            }
-
-                            catch (channel::channelException &e)
-                            {
-                                std::string replay = e.what();
-                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                            }
-                        }
-
-                        else if (sBuffer.substr(0, 4) == "KICK")
-                        {
-                            int User = getUserBySocket(fds[i].fd);
-                            try
-                            {
-                                std::cerr << "'" << sBuffer << "'" << std::endl;
-
-                                std::vector<std::string> vec = split(sBuffer, ' ');
-                                if (vec.size() < 3)
-                                    throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "KICK")));
-                                std::vector<std::string> chan = split(vec[1], ','), target = split(vec[2], ',');
-                                for (size_t y = 0; y < chan.size(); y++)
+                                catch (channel::channelException &e)
                                 {
+                                    std::string replay = e.what();
+                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                }
+                            }
+                            else if (sBuffer.substr(0, 6) == "INVITE")
+                            {
+                                int User = getUserBySocket(fds[i].fd);
+                                try
+                                {
+                                    std::vector<std::string> vec = split(sBuffer, ' ');
+                                    if (vec.size() < 3)
+                                        throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "INVITE")));
+                                    if (vec[2][0] == ':')
+                                        vec[2] = vec[2].substr(1);
                                     size_t it = 0;
-                                    try
+                                    for (; it < channels.size(); it++)
                                     {
-                                        for (; it < channels.size(); it++)
+                                        if (channels[it].getName() == vec[2])
                                         {
-                                            if (channels[it].getName() == chan[y])
+                                            if (channels[it].isMember(users[User]))
                                             {
-                                                if (channels[it].isMember(users[User]))
+                                                if (channels[it].isoperator(users[User]))
                                                 {
-                                                    if (channels[it].isoperator(users[User]))
-                                                    {
-                                                        for (size_t x = 0; x < target.size(); x++)
-                                                        {
-                                                            try
-                                                            {
-                                                                user tmp = getUser_str(target[x], channels[it].getMembers());
-                                                                if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
-                                                                    throw channel::channelException(ERR_NOSUCHNICK(serverIP, target[x]));
-                                                                else
-                                                                {
-                                                                    std::string reply = RPL_KICK(users[User].getNick(), users[User].getNick(), serverIP, chan[y], target[x], getreason(vec, 3));
-                                                                    std::cerr << "ha howa dkhal \n";
-                                                                    std::vector<user> tmpusers = channels[it].getMembers();
-                                                                    for (size_t s = 0; s < tmpusers.size(); s++)
-                                                                        send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
-                                                                    channels[it].removeMember(tmp, 0);
-                                                                }
-                                                            }
-                                                            catch (channel::channelException &e)
-                                                            {
-                                                                std::string replay = e.what();
-                                                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                                                            }
-                                                            it = channels.size() + 1;
-                                                        }
-                                                    }
+                                                    user tmp1 = getUser_str(vec[1], users);
+                                                    if (tmp1.getSocket() == -1 && tmp1.getIpAddress() == "error")
+                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP, vec[1]));
                                                     else
-                                                        throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
+                                                    {
+                                                        user tmp = getUser_str(vec[1], channels[it].getMembers());
+                                                        if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                        {
+                                                            std::string reply = RPL_INVITE(users[User].getNick(), users[User].getNick(), serverIP, vec[1], vec[2]);
+                                                            channels[it].addInvite(getUser_str(vec[1], users));
+                                                            send(tmp1.getSocket(), reply.c_str(), reply.size(), 0);
+                                                        }
+                                                        else
+                                                            throw channel::channelException(ERR_USERONCHANNEL(serverIP, vec[2], vec[1]));
+                                                    }
                                                 }
                                                 else
-                                                    throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
-                                                break;
+                                                    throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
                                             }
+                                            else
+                                                throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
+                                            break;
                                         }
-                                        if (it == channels.size())
-                                            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, chan[y], users[User].getNick())); // khesni ne3raf channel li jani mena msg
                                     }
-                                    catch (channel::channelException &e)
-                                    {
-                                        std::string replay = e.what();
-                                        send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                                    }
+                                    if (it == channels.size())
+                                        throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[2], users[User].getNick())); // khesni ne3raf channel li jani mena msg
+                                }
+
+                                catch (channel::channelException &e)
+                                {
+                                    std::string replay = e.what();
+                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
                                 }
                             }
-                            catch (channel::channelException &e)
+
+                            else if (sBuffer.substr(0, 4) == "KICK")
                             {
-                                std::string replay = e.what();
-                                send(fds[i].fd, replay.c_str(), replay.size(), 0);
-                            }
-                        }
-                        // my ending
-                        else if (sBuffer.substr(0, 4) == "PART")
-                        {
-                            try
-                            {
-                                int partUser = getUserBySocket(fds[i].fd);
-                                if (partUser == -1)
-                                    throw serverException("User not found");
-                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                for (size_t i = 0; i < channelName.size(); i++)
+                                int User = getUserBySocket(fds[i].fd);
+                                try
                                 {
-                                    if (channelName[i] == ' ' || channelName[i] == ',')
+                                    std::cerr << "'" << sBuffer << "'" << std::endl;
+
+                                    std::vector<std::string> vec = split(sBuffer, ' ');
+                                    if (vec.size() < 3)
+                                        throw(channel::channelException(ERR_NEEDMOREPARAMS(users[User].getNick(), serverIP, "KICK")));
+                                    std::vector<std::string> chan = split(vec[1], ','), target = split(vec[2], ',');
+                                    for (size_t y = 0; y < chan.size(); y++)
                                     {
-                                        channelName = channelName.substr(0, i);
+                                        size_t it = 0;
+                                        try
+                                        {
+                                            for (; it < channels.size(); it++)
+                                            {
+                                                if (channels[it].getName() == chan[y])
+                                                {
+                                                    if (channels[it].isMember(users[User]))
+                                                    {
+                                                        if (channels[it].isoperator(users[User]))
+                                                        {
+                                                            for (size_t x = 0; x < target.size(); x++)
+                                                            {
+                                                                try
+                                                                {
+                                                                    user tmp = getUser_str(target[x], channels[it].getMembers());
+                                                                    if (tmp.getSocket() == -1 && tmp.getIpAddress() == "error")
+                                                                        throw channel::channelException(ERR_NOSUCHNICK(serverIP, target[x]));
+                                                                    else
+                                                                    {
+                                                                        std::string reply = RPL_KICK(users[User].getNick(), users[User].getNick(), serverIP, chan[y], target[x], getreason(vec, 3));
+                                                                        std::cerr << "ha howa dkhal \n";
+                                                                        std::vector<user> tmpusers = channels[it].getMembers();
+                                                                        for (size_t s = 0; s < tmpusers.size(); s++)
+                                                                            send(tmpusers[s].getSocket(), reply.c_str(), reply.size(), 0);
+                                                                        channels[it].removeMember(tmp, 0);
+                                                                    }
+                                                                }
+                                                                catch (channel::channelException &e)
+                                                                {
+                                                                    std::string replay = e.what();
+                                                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                                                }
+                                                                it = channels.size() + 1;
+                                                            }
+                                                        }
+                                                        else
+                                                            throw channel::channelException(ERR_CHANOPRIVSNEEDED(serverIP, channels[it].getName()));
+                                                    }
+                                                    else
+                                                        throw channel::channelException(ERR_NOTONCHANNEL(serverIP, channels[it].getName()));
+                                                    break;
+                                                }
+                                            }
+                                            if (it == channels.size())
+                                                throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, chan[y], users[User].getNick())); // khesni ne3raf channel li jani mena msg
+                                        }
+                                        catch (channel::channelException &e)
+                                        {
+                                            std::string replay = e.what();
+                                            send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                        }
+                                    }
+                                }
+                                catch (channel::channelException &e)
+                                {
+                                    std::string replay = e.what();
+                                    send(fds[i].fd, replay.c_str(), replay.size(), 0);
+                                }
+                            }
+                            // my ending
+                            else if (sBuffer.substr(0, 4) == "PART")
+                            {
+                                try
+                                {
+                                    int partUser = getUserBySocket(fds[i].fd);
+                                    if (partUser == -1)
+                                        throw serverException("User not found");
+                                    std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
+                                    for (size_t i = 0; i < channelName.size(); i++)
+                                    {
+                                        if (channelName[i] == ' ' || channelName[i] == ',')
+                                        {
+                                            channelName = channelName.substr(0, i);
+                                            break;
+                                        }
+                                    }
+                                    for (size_t i = 0; i < channels.size(); i++)
+                                    {
+                                        if (channels[i].getName() == channelName)
+                                        {
+                                            channels[i].removeMember(users[partUser], 1);
+                                            if (channels[i].getMembers().size() == 0)
+                                            {
+                                                removeChannel(channels[i]);
+                                                i--;
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (channel::channelException &e)
+                                {
+                                    std::cerr << "Error PART: " << e.what() << "\n";
+                                }
+                            }
+                            else if (sBuffer.substr(0, 7) == "PRIVMSG")
+                            {
+                                std::vector<std::string> args = splitCommand(sBuffer);
+                                if (args.size() < 3)
+                                {
+                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PRIVMSG");
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
+                                    continue;
+                                }
+                                std::string receiver = args[1];
+                                std::string message;
+                                message = sBuffer.substr(sBuffer.find(args[2]), sBuffer.size() - sBuffer.find(args[2]));
+                                std::cerr << "message: " << message << "|" << std::endl;
+                                std::vector<std::string> receivers;
+                                for (size_t i = 0; i < receiver.size(); i++)
+                                {
+                                    if (receiver[i] == ',')
+                                    {
+                                        receivers.push_back(receiver.substr(0, i));
+                                        receiver = receiver.substr(i + 1, receiver.size() - i - 1);
+                                        i = 0;
+                                    }
+                                    else if (i == receiver.size() - 1)
+                                    {
+                                        receivers.push_back(receiver);
+                                    }
+                                }
+                                if (message[0] == ':')
+                                {
+                                    message = message.substr(1, message.size() - 1);
+                                }
+                                try
+                                {
+                                    int sender = getUserBySocket(fds[i].fd);
+                                    if (sender == -1)
+                                        throw serverException("User not found");
+                                    for (size_t i = 0; i < receivers.size(); i++)
+                                    {
+                                        if (receivers[i][0] == '#' || receivers[i][0] == '&')
+                                            prvmsgchannel(users[sender], receivers[i], message);
+                                        else
+                                            prvmsg(users[sender], receivers[i], message);
+                                    }
+                                }
+                                catch (server::serverException &e)
+                                {
+                                    std::cerr << "Error PRIVMSG: " << e.what() << "\n";
+                                }
+                            }
+                            else if (sBuffer.substr(0, 4) != "PONG")
+                            {
+                                std::string command = sBuffer.substr(0, sBuffer.size() - 1);
+                                if (command[command.size() - 1] == '\n')
+                                    command = command.substr(0, command.size() - 2);
+                                else
+                                    command = command.substr(0, command.size() - 3);
+                                for (size_t i = 0; i < command.size(); i++)
+                                {
+                                    if (command[i] == ' ')
+                                    {
+                                        command = command.substr(0, i);
                                         break;
                                     }
                                 }
-                                for (size_t i = 0; i < channels.size(); i++)
+                                int user = getUserBySocket(fds[i].fd);
+                                if (user != -1)
                                 {
-                                    if (channels[i].getName() == channelName)
-                                    {
-                                        channels[i].removeMember(users[partUser], 1);
-                                        if (channels[i].getMembers().size() == 0)
-                                        {
-                                            removeChannel(channels[i]);
-                                            i--;
-                                        }
-                                    }
+                                    std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
+                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
                                 }
-                            }
-                            catch (channel::channelException &e)
-                            {
-                                std::cerr << "Error PART: " << e.what() << "\n";
-                            }
-                        }
-                        else if (sBuffer.substr(0, 7) == "PRIVMSG")
-                        {
-                            std::vector<std::string> args = splitCommand(sBuffer);
-                            if (args.size() < 3)
-                            {
-                                std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PRIVMSG");
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                continue;
-                            }
-                            std::string receiver = args[1];
-                            std::string message;
-                            message = sBuffer.substr(sBuffer.find(args[2]), sBuffer.size() - sBuffer.find(args[2]));
-                            std::cerr << "message: " << message << "|" << std::endl;
-                            std::vector<std::string> receivers;
-                            for (size_t i = 0; i < receiver.size(); i++)
-                            {
-                                if (receiver[i] == ',')
-                                {
-                                    receivers.push_back(receiver.substr(0, i));
-                                    receiver = receiver.substr(i + 1, receiver.size() - i - 1);
-                                    i = 0;
-                                }
-                                else if (i == receiver.size() - 1)
-                                {
-                                    receivers.push_back(receiver);
-                                }
-                            }
-                            if (message[0] == ':')
-                            {
-                                message = message.substr(1, message.size() - 1);
-                            }
-                            try
-                            {
-                                int sender = getUserBySocket(fds[i].fd);
-                                if (sender == -1)
-                                    throw serverException("User not found");
-                                for (size_t i = 0; i < receivers.size(); i++)
-                                {
-                                    if (receivers[i][0] == '#' || receivers[i][0] == '&')
-                                        prvmsgchannel(users[sender], receivers[i], message);
-                                    else
-                                        prvmsg(users[sender], receivers[i], message);
-                                }
-                            }
-                            catch (server::serverException &e)
-                            {
-                                std::cerr << "Error PRIVMSG: " << e.what() << "\n";
-                            }
-                        }
-                        else if (sBuffer.substr(0, 4) != "PONG")
-                        {
-                            std::string command = sBuffer.substr(0, sBuffer.size() - 1);
-                            if (command[command.size() - 1] == '\n')
-                                command = command.substr(0, command.size() - 2);
-                            else
-                                command = command.substr(0, command.size() - 3);
-                            for (size_t i = 0; i < command.size(); i++)
-                            {
-                                if (command[i] == ' ')
-                                {
-                                    command = command.substr(0, i);
-                                    break;
-                                }
-                            }
-                            int user = getUserBySocket(fds[i].fd);
-                            if (user != -1)
-                            {
-                                std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
-                                send(fds[i].fd, reply.c_str(), reply.size(), 0);
                             }
                         }
                     }

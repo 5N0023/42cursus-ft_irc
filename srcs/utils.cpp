@@ -139,7 +139,6 @@ std::vector<std::string> split(const std::string &input, char delimiter)
         if (token[0] != '\0')
             result.push_back(token);
     }
-
     return result;
 }
 
