@@ -53,7 +53,7 @@ server::~server()
 
 void server::run()
 {
-    std::vector<struct pollfd> fds;
+    
     struct pollfd listenFd;
     listenFd.fd = listeningSocket;
     listenFd.events = POLLIN;
@@ -64,7 +64,7 @@ void server::run()
     std::string sBufferAll;
 
     // Map to store client IP addresses
-    std::map<int, std::string> clientIPs;
+    
 
     while (true)
     {
@@ -188,34 +188,7 @@ void server::run()
                             std::cerr << "sBuffer: " << sBuffer << std::endl;
                             if (sBuffer.substr(0, 4) == "QUIT")
                             {
-                                try
-                                {
-                                    int user = getUserBySocket(fds[i].fd);
-                                    close(fds[i].fd);
-                                    clientIPs.erase(fds[i].fd);
-                                    fds.erase(fds.begin() + i);
-                                    --i;
-                                    if (user != -1)
-                                    {
-                                        for (size_t j = 0; j < channels.size(); j++)
-                                        {
-                                            if (channels[j].isMember(users[user]))
-                                            {
-                                                channels[j].removeMember(users[user], 1);
-                                                if (channels[j].getMembers().size() == 0)
-                                                {
-                                                    removeChannel(channels[j]);
-                                                    j--;
-                                                }
-                                            }
-                                        }
-                                        removeUser(users[user]);
-                                    }
-                                }
-                                catch (server::serverException &e)
-                                {
-                                    std::cerr << "Error: " << e.what() << "\n";
-                                }
+                                quit(fds[i].fd, i);
                                 continue;
                             }
                             try
@@ -251,62 +224,12 @@ void server::run()
                                 nick(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
 
                             else if (sBuffer.substr(0, 4) == "USER")
-                            {
-                                std::vector<std::string> args = splitCommand(sBuffer);
-                                if (args.size() < 5)
-                                {
-                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "USER");
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                    continue;
-                                }
-                                try
-                                {
-                                    int user = getUserBySocket(fds[i].fd);
-                                    for (size_t i = 0; i < args[1].size(); i++)
-                                    {
-                                        if (args[1][i] == ' ')
-                                        {
-                                            args[1] = args[1].substr(0, i);
-                                            break;
-                                        }
-                                    }
-                                    if (user != -1)
-                                    {
-                                        users[user].setUserName(args[1], serverIP);
-                                    }
-                                }
-                                catch (user::userException &e)
-                                {
-                                    std::cerr << "Error USER: " << e.what() << "\n";
-                                }
-                            }
+                                usercmd(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
+
                             else if (sBuffer.substr(0, 4) == "JOIN")
-                            { // add condition of checking if the channel is invite only && check if it have password or not
-                                try
-                                {
-                                    int joinedUser = getUserBySocket(fds[i].fd);
-                                    std::vector<std::string> args = splitCommand(sBuffer);
-                                    if (args.size() < 2)
-                                    {
-                                        std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "JOIN");
-                                        send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                        continue;
-                                    }
-                                    std::string channelsName = args[1];
-                                    std::string keys = args[2];
-                                    std::map<std::string, std::string> chans = parseChannels(channelsName, keys);
-                                    std::map<std::string, std::string>::iterator it = chans.begin();
-                                    while (it != chans.end())
-                                    {
-                                        addChannel(it->first, users[joinedUser], it->second);
-                                        it++;
-                                    }
-                                }
-                                catch (channel::channelException &e)
-                                {
-                                    std::cerr << "Error JOIN: " << e.what() << "\n";
-                                }
-                            }
+                                join(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
+
+
 
                             // my starting
                             else if (sBuffer.substr(0, 4) == "MODE")
@@ -1005,6 +928,97 @@ void server::nick(int fd, std::string sBuffer, std::string clientIP)
     catch (user::userException &e)
     {
         std::cerr << "Error NICK: " << e.what() << "\n";
+    }
+}
+
+void server::usercmd(int fd, std::string sBuffer, std::string clientIP)
+{
+    std::vector<std::string> args = splitCommand(sBuffer);
+    if (args.size() < 5)
+    {
+        std::string reply = ERR_NEEDMOREPARAMS(clientIP, serverIP, "USER");
+        send(fd, reply.c_str(), reply.size(), 0);
+        return;
+    }
+    try
+    {
+        int user = getUserBySocket(fd);
+        for (size_t i = 0; i < args[1].size(); i++)
+        {
+            if (args[1][i] == ' ')
+            {
+                args[1] = args[1].substr(0, i);
+                break;
+            }
+        }
+        if (user != -1)
+        {
+            users[user].setUserName(args[1], serverIP);
+        }
+    }
+    catch (user::userException &e)
+    {
+        std::cerr << "Error USER: " << e.what() << "\n";
+    }
+}
+
+void server::join(int fd, std::string sBuffer, std::string clientIP)
+{
+    try
+    {
+        int joinedUser = getUserBySocket(fd);
+        std::vector<std::string> args = splitCommand(sBuffer);
+        if (args.size() < 2)
+        {
+            std::string reply = ERR_NEEDMOREPARAMS(clientIP, serverIP, "JOIN");
+            send(fd, reply.c_str(), reply.size(), 0);
+            return;
+        }
+        std::string channelsName = args[1];
+        std::string keys = args[2];
+        std::map<std::string, std::string> chans = parseChannels(channelsName, keys);
+        std::map<std::string, std::string>::iterator it = chans.begin();
+        while (it != chans.end())
+        {
+            addChannel(it->first, users[joinedUser], it->second);
+            it++;
+        }
+    }
+    catch (channel::channelException &e)
+    {
+        std::cerr << "Error JOIN: " << e.what() << "\n";
+    }
+}
+
+void server::quit(int fd, size_t &i)
+{
+    try
+    {
+        int user = getUserBySocket(fd);
+        close(fd);
+        clientIPs.erase(fd);
+        fds.erase(fds.begin() + i);
+        --i;
+        if (user != -1)
+        {
+            for (size_t j = 0; j < channels.size(); j++)
+            {
+                if (channels[j].isMember(users[user]))
+                {
+                    channels[j].removeMember(users[user], 1);
+                    if (channels[j].getMembers().size() == 0)
+                    {
+                        removeChannel(channels[j]);
+                        j--;
+                    }
+                }
+            }
+            removeUser(users[user]);
+        }
+    }
+    catch (server::serverException &e)
+    {
+        std::cerr << "Error: " << e.what() << "\n";
     }
 }
 

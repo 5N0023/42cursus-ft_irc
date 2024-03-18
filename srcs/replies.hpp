@@ -31,7 +31,7 @@
 #define ERR_CHANNELISFULL(nick, channelName) ":" + nick + " 471 " + channelName + " :Cannot join channel (+l)\r\n"
 #define ERR_BADCHANNELKEY(nick, hostname, channelName) ":" + hostname + " 475 " + nick + " " + channelName + " :Cannot join channel (incorrect channel key)\r\n"
 #define ERR_INVITEONLY(nick, channelName) ":" + nick + " 473 " + channelName + " :Cannot join channel (+i)\r\n"
-#define ERR_NEEDMOREPARAMS(nick, hostname, command) ":" + hostname + " 461 " + nick + " " + command + " :Not enough parameters\r\n"
+#define ERR_NEEDMOREPARAMS(clientIP, hostname, command) ":" + hostname + " 461 " + clientIP + " " + command + " :Not enough parameters\r\n"
 
 
 #define RPL_JOIN(nick, username, channelname, ipaddress) ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"

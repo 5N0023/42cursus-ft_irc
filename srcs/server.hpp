@@ -40,6 +40,8 @@ private:
     std::vector<channel> channels;
     std::string serverIP;
     int listeningSocket;
+    std::map<int, std::string> clientIPs;
+    std::vector<struct pollfd> fds;
 
 public:
     server(int port, std::string password);
@@ -54,6 +56,9 @@ public:
     void Kick(size_t, std::string, std::vector<struct pollfd>);
     void pass(int socket, std::string sBuffer, std::string clientIP);
     void nick(int socket, std::string sBuffer, std::string clientIP);
+    void usercmd(int fd, std::string sBuffer, std::string clientIP);
+    void join(int fd, std::string sBuffer, std::string clientIP);
+    void quit(int fd, size_t &i);
     void addChannel(std::string ChannelName, user user, std::string key);
     void removeChannel(channel channel);
     void prvmsg(user sender, std::string receiver, std::string message);
