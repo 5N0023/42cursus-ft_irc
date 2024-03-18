@@ -64,6 +64,9 @@ public:
     void removeChannel(channel channel);
     void prvmsg(user sender, std::string receiver, std::string message);
     void prvmsgchannel(user sender, std::string channel, std::string message);
+    void part(int fd, std::string sBuffer);
+    void privmsg(std::string sBuffer,int fd, std::string clientIP);
+    void pong(std::string sBuffer,int fd);
     std::vector<user> &getUsers();
     std::vector<channel> &getChannels();
     int getUserBySocket(int socket);

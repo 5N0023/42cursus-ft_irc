@@ -218,121 +218,26 @@ void server::run()
                             else if (sBuffer.substr(0, 4) == "JOIN")
                                 join(fds[i].fd, sBuffer, clientIPs[fds[i].fd]);
 
-                            // my starting
                             else if (sBuffer.substr(0, 4) == "MODE")
                                 Mode(i, sBuffer, fds);
+
                             else if (sBuffer.substr(0, 5) == "TOPIC")
                                 Topic(i, sBuffer, fds);
+
                             else if (sBuffer.substr(0, 6) == "INVITE")
                                 Invite(i, sBuffer, fds);
+
                             else if (sBuffer.substr(0, 4) == "KICK")
                                 Kick(i, sBuffer, fds);
 
                             else if (sBuffer.substr(0, 4) == "PART")
-                            {
-                                try
-                                {
-                                    int partUser = getUserBySocket(fds[i].fd);
-                                    if (partUser == -1)
-                                        throw serverException("User not found");
-                                    std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                    for (size_t i = 0; i < channelName.size(); i++)
-                                    {
-                                        if (channelName[i] == ' ' || channelName[i] == ',')
-                                        {
-                                            channelName = channelName.substr(0, i);
-                                            break;
-                                        }
-                                    }
-                                    for (size_t i = 0; i < channels.size(); i++)
-                                    {
-                                        if (channels[i].getName() == channelName)
-                                        {
-                                            channels[i].removeMember(users[partUser], 1);
-                                            if (channels[i].getMembers().size() == 0)
-                                            {
-                                                removeChannel(channels[i]);
-                                                i--;
-                                            }
-                                        }
-                                    }
-                                }
-                                catch (channel::channelException &e)
-                                {
-                                    std::cerr << "Error PART: " << e.what() << "\n";
-                                }
-                            }
+                                part(fds[i].fd, sBuffer);
+
                             else if (sBuffer.substr(0, 7) == "PRIVMSG")
-                            {
-                                std::vector<std::string> args = splitCommand(sBuffer);
-                                if (args.size() < 3)
-                                {
-                                    std::string reply = ERR_NEEDMOREPARAMS(clientIPs[fds[i].fd], serverIP, "PRIVMSG");
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                    continue;
-                                }
-                                std::string receiver = args[1];
-                                std::string message;
-                                message = sBuffer.substr(sBuffer.find(args[2]), sBuffer.size() - sBuffer.find(args[2]));
-                                std::cerr << "message: " << message << "|" << std::endl;
-                                std::vector<std::string> receivers;
-                                for (size_t i = 0; i < receiver.size(); i++)
-                                {
-                                    if (receiver[i] == ',')
-                                    {
-                                        receivers.push_back(receiver.substr(0, i));
-                                        receiver = receiver.substr(i + 1, receiver.size() - i - 1);
-                                        i = 0;
-                                    }
-                                    else if (i == receiver.size() - 1)
-                                    {
-                                        receivers.push_back(receiver);
-                                    }
-                                }
-                                if (message[0] == ':')
-                                {
-                                    message = message.substr(1, message.size() - 1);
-                                }
-                                try
-                                {
-                                    int sender = getUserBySocket(fds[i].fd);
-                                    if (sender == -1)
-                                        throw serverException("User not found");
-                                    for (size_t i = 0; i < receivers.size(); i++)
-                                    {
-                                        if (receivers[i][0] == '#' || receivers[i][0] == '&')
-                                            prvmsgchannel(users[sender], receivers[i], message);
-                                        else
-                                            prvmsg(users[sender], receivers[i], message);
-                                    }
-                                }
-                                catch (server::serverException &e)
-                                {
-                                    std::cerr << "Error PRIVMSG: " << e.what() << "\n";
-                                }
-                            }
+                                privmsg(sBuffer, fds[i].fd, clientIPs[fds[i].fd]);
+
                             else if (sBuffer.substr(0, 4) != "PONG")
-                            {
-                                std::string command = sBuffer.substr(0, sBuffer.size() - 1);
-                                if (command[command.size() - 1] == '\n')
-                                    command = command.substr(0, command.size() - 2);
-                                else
-                                    command = command.substr(0, command.size() - 3);
-                                for (size_t i = 0; i < command.size(); i++)
-                                {
-                                    if (command[i] == ' ')
-                                    {
-                                        command = command.substr(0, i);
-                                        break;
-                                    }
-                                }
-                                int user = getUserBySocket(fds[i].fd);
-                                if (user != -1)
-                                {
-                                    std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
-                                    send(fds[i].fd, reply.c_str(), reply.size(), 0);
-                                }
-                            }
+                                pong(sBuffer, fds[i].fd);
                         }
                     }
                 }
@@ -722,5 +627,112 @@ void server::quit(int fd, size_t &i)
     catch (server::serverException &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
+    }
+}
+
+void server::part(int fd, std::string sBuffer)
+{
+    try
+    {
+        int partUser = getUserBySocket(fd);
+        if (partUser == -1)
+            throw serverException("User not found");
+        std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
+        for (size_t i = 0; i < channelName.size(); i++)
+        {
+            if (channelName[i] == ' ' || channelName[i] == ',')
+            {
+                channelName = channelName.substr(0, i);
+                break;
+            }
+        }
+        for (size_t i = 0; i < channels.size(); i++)
+        {
+            if (channels[i].getName() == channelName)
+            {
+                channels[i].removeMember(users[partUser], 1);
+                if (channels[i].getMembers().size() == 0)
+                {
+                    removeChannel(channels[i]);
+                    i--;
+                }
+            }
+        }
+    }
+    catch (channel::channelException &e)
+    {
+        std::cerr << "Error PART: " << e.what() << "\n";
+    }
+}
+
+void server::privmsg(std::string sBuffer, int fd, std::string clientIP)
+{
+    std::vector<std::string> args = splitCommand(sBuffer);
+    if (args.size() < 3)
+    {
+        std::string reply = ERR_NEEDMOREPARAMS(clientIP, serverIP, "PRIVMSG");
+        send(fd, reply.c_str(), reply.size(), 0);
+        return;
+    }
+    std::string receiver = args[1];
+    std::string message;
+    message = sBuffer.substr(sBuffer.find(args[2]), sBuffer.size() - sBuffer.find(args[2]));
+    std::vector<std::string> receivers;
+    for (size_t i = 0; i < receiver.size(); i++)
+    {
+        if (receiver[i] == ',')
+        {
+            receivers.push_back(receiver.substr(0, i));
+            receiver = receiver.substr(i + 1, receiver.size() - i - 1);
+            i = 0;
+        }
+        else if (i == receiver.size() - 1)
+        {
+            receivers.push_back(receiver);
+        }
+    }
+    if (message[0] == ':')
+    {
+        message = message.substr(1, message.size() - 1);
+    }
+    try
+    {
+        int sender = getUserBySocket(fd);
+        if (sender == -1)
+            throw serverException("User not found");
+        for (size_t i = 0; i < receivers.size(); i++)
+        {
+            if (receivers[i][0] == '#' || receivers[i][0] == '&')
+                prvmsgchannel(users[sender], receivers[i], message);
+            else
+                prvmsg(users[sender], receivers[i], message);
+        }
+    }
+    catch (server::serverException &e)
+    {
+        std::cerr << "Error PRIVMSG: " << e.what() << "\n";
+    }
+}
+
+void server::pong(std::string sBuffer,int fd)
+{
+    std::string command = sBuffer.substr(0, sBuffer.size() - 1);
+    if (command[command.size() - 1] == '\n')
+        command = command.substr(0, command.size() - 2);
+    else
+        command = command.substr(0, command.size() - 3);
+    for (size_t i = 0; i < command.size(); i++)
+    {
+        if (command[i] == ' ')
+        {
+            command = command.substr(0, i);
+            break;
+        }
+    }
+    int user = getUserBySocket(fd);
+    if (user != -1)
+    {
+        std::string reply = ERR_UNKNOWNCOMMAND(users[user].getNick(), serverIP, command);
+        send(fd, reply.c_str(), reply.size(), 0);
     }
 }
