@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/12 10:39:19 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/17 14:03:59 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,6 +307,7 @@ void server::run()
                                     std::cerr << "Error JOIN: " << e.what() << "\n";
                                 }
                             }
+<<<<<<< HEAD
 
                             // my starting
                             else if (sBuffer.substr(0, 4) == "MODE")
@@ -629,6 +630,26 @@ void server::run()
                             else if (sBuffer.substr(0, 4) == "PART")
                             {
                                 try
+=======
+                        }
+                        else if (sBuffer.substr(0, 4) == "MODE")
+                            Mode(i, sBuffer, fds);
+                        else if (sBuffer.substr(0, 5) == "TOPIC")
+                            Topic(i, sBuffer, fds);
+                        else if (sBuffer.substr(0, 6) == "INVITE")
+                            Invite(i, sBuffer, fds);
+                        else if (sBuffer.substr(0, 4) == "KICK")
+                            Kick(i, sBuffer, fds);
+                        else if (sBuffer.substr(0, 4) == "PART")
+                        {
+                            try
+                            {
+                                int partUser = getUserBySocket(fds[i].fd);
+                                if (partUser == -1)
+                                    throw serverException("User not found");
+                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
+                                for (size_t i = 0; i < channelName.size(); i++)
+>>>>>>> a7186d84de35a74a50a0ae9125b307d14fdab453
                                 {
                                     int partUser = getUserBySocket(fds[i].fd);
                                     if (partUser == -1)
