@@ -307,7 +307,6 @@ void server::run()
                                     std::cerr << "Error JOIN: " << e.what() << "\n";
                                 }
                             }
-<<<<<<< HEAD
 
                             // my starting
                             else if (sBuffer.substr(0, 4) == "MODE")
@@ -630,26 +629,6 @@ void server::run()
                             else if (sBuffer.substr(0, 4) == "PART")
                             {
                                 try
-=======
-                        }
-                        else if (sBuffer.substr(0, 4) == "MODE")
-                            Mode(i, sBuffer, fds);
-                        else if (sBuffer.substr(0, 5) == "TOPIC")
-                            Topic(i, sBuffer, fds);
-                        else if (sBuffer.substr(0, 6) == "INVITE")
-                            Invite(i, sBuffer, fds);
-                        else if (sBuffer.substr(0, 4) == "KICK")
-                            Kick(i, sBuffer, fds);
-                        else if (sBuffer.substr(0, 4) == "PART")
-                        {
-                            try
-                            {
-                                int partUser = getUserBySocket(fds[i].fd);
-                                if (partUser == -1)
-                                    throw serverException("User not found");
-                                std::string channelName = sBuffer.substr(5, sBuffer.size() - 1);
-                                for (size_t i = 0; i < channelName.size(); i++)
->>>>>>> a7186d84de35a74a50a0ae9125b307d14fdab453
                                 {
                                     int partUser = getUserBySocket(fds[i].fd);
                                     if (partUser == -1)
@@ -832,8 +811,8 @@ void server::addChannel(std::string ChannelName, user user, std::string key)
             {
                 std::string reply = RPL_JOIN(user.getNick(), user.getUserName(), ChannelName, user.getIpAddress());
                 send(channels[i].getMembers()[j].getSocket(), reply.c_str(), reply.size(), 0);
-                std::cerr << "reply: " << reply << std::endl;
             }
+
             std::string users;
             for (size_t j = 0; j < channels[i].getMembers().size(); j++)
             {
@@ -844,6 +823,12 @@ void server::addChannel(std::string ChannelName, user user, std::string key)
             }
             std::string reply = RPL_NAMREPLY(serverIP, users, ChannelName, user.getNick());
             send(user.getSocket(), reply.c_str(), reply.size(), 0);
+            // TOPIC reply
+            if (channels[i].getHasTopic())
+            {
+                reply = RPL_TOPICDISPLAY(serverIP, user.getNick(), ChannelName, channels[i].getTopic());
+                send(user.getSocket(), reply.c_str(), reply.size(), 0);
+            }
             channelExists = true;
             break;
         }
