@@ -22,10 +22,19 @@ int main(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
     try
     {
-        server ircServer(std::stoi(argv[1]), argv[2]);
+        std::string password = argv[2];
+        for (size_t i = 0; i < password.length(); i++)
+            {
+                if (password[i] == '\n' || password[i] == ' ')
+                {
+                    std::cerr << "Password contains invalid characters\n";
+                    return -1;
+                }
+            }
+        server ircServer(atoi(argv[1]), password);
         ircServer.run();
     }
-    catch (server::serverException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error in main: " << e.what() << "\n";
         return -1;

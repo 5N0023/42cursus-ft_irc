@@ -86,7 +86,6 @@ channel::channel(std::string name)
 
 channel::~channel()
 {
-    std::cerr << "channel destroyed" << std::endl;
 }
 
 void channel::setName(std::string name)

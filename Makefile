@@ -68,6 +68,7 @@ clean :
 
 fclean: clean
 	@rm -f $(NAME) $(BOTNAME)
+	@rm -f serverlog.txt botlog.txt
 	@echo "$(COLOUR_RED)--->[program deleted successfully ✅]<---"
 
 
@@ -78,5 +79,5 @@ run:
 	sleep 1
 	./bot $(SERVERIP) $(PORT) $(PASSWORD) &> botlog.txt 2>&1 &
 
-kill:
-	kill $(shell pgrep server)
+#kill $(pgrep ircserv)
+#kill $(pgrep bot)

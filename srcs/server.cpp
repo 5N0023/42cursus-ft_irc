@@ -117,6 +117,7 @@ void server::run()
                             }
                             sBuffer = sBuffer.substr(0, sBuffer.find('\n'));
                             sBuffer = sBuffer.substr(0, sBuffer.find('\r'));
+                            std::cout << "server received: " << sBuffer << std::endl;
                             if (sBuffer.substr(0, 4) == "QUIT")
                             {
                                 quit(fds[i].fd, i);
@@ -137,7 +138,7 @@ void server::run()
                                     continue;
                                 }
                             }
-                            catch (user::userException &e)
+                            catch (std::exception &e)
                             {
                                 std::cerr << "Error: " << e.what() << "\n";
                             }
@@ -334,11 +335,10 @@ void server::prvmsg(user sender, std::string receiver, std::string message)
     bool userExists = false;
     for (size_t j = 0; j < users.size(); j++)
     {
-        if (users[j].getNick() == receiver && users[j].getRegistered())
+        if (users[j].getNick() == receiver && users[j].getRegistered() && users[j].getNick() != sender.getNick())
         {
             userExists = true;
             reply = PRIVMSG_FORMAT(sender.getNick(), sender.getUserName(), sender.getIpAddress(), receiver, message);
-            std::cerr << "reply: " << reply << std::endl;
             send(users[j].getSocket(), reply.c_str(), reply.size(), 0);
         }
     }
@@ -424,7 +424,7 @@ void server::pass(int fd, std::string sBuffer, std::string clientIP)
                 users[user].setPassConfirmed(true);
         }
     }
-    catch (user::userException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
     }
@@ -460,7 +460,6 @@ void server::nick(int fd, std::string sBuffer, std::string clientIP)
         }
         if (args[1].size() == 0)
         {
-            std::cerr << "Error: " << args[1] << "\n";
             std::string reply = ERR_NONICKNAMEGIVEN(clientIP, serverIP);
             send(fd, reply.c_str(), reply.size(), 0);
             return;
@@ -469,7 +468,7 @@ void server::nick(int fd, std::string sBuffer, std::string clientIP)
         if (user != -1)
             users[user].setNick(args[1], users, serverIP);
     }
-    catch (user::userException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error NICK: " << e.what() << "\n";
     }
@@ -500,7 +499,7 @@ void server::usercmd(int fd, std::string sBuffer, std::string clientIP)
             users[user].setUserName(args[1], serverIP);
         }
     }
-    catch (user::userException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error USER: " << e.what() << "\n";
     }
@@ -528,7 +527,7 @@ void server::join(int fd, std::string sBuffer, std::string clientIP)
             it++;
         }
     }
-    catch (channel::channelException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error JOIN: " << e.what() << "\n";
     }
@@ -560,7 +559,7 @@ void server::quit(int fd, size_t &i)
             removeUser(users[user]);
         }
     }
-    catch (server::serverException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
     }
@@ -595,7 +594,7 @@ void server::part(int fd, std::string sBuffer)
             }
         }
     }
-    catch (channel::channelException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error PART: " << e.what() << "\n";
     }
@@ -644,7 +643,7 @@ void server::privmsg(std::string sBuffer, int fd, std::string clientIP)
                 prvmsg(users[sender], receivers[i], message);
         }
     }
-    catch (server::serverException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error PRIVMSG: " << e.what() << "\n";
     }
@@ -698,7 +697,7 @@ void server::newConnections()
         user newUser(clientIPs[clientSocket], clientSocket);
         users.push_back(newUser);
     }
-    catch (server::serverException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
     }
@@ -706,7 +705,7 @@ void server::newConnections()
 
 void server::disconnecting(size_t &i)
 {
-    std::cerr << "Connection closed or error\n";
+    std::cout << "client :" << clientIPs[fds[i].fd] << " with socket: " << fds[i].fd << " has disconnected\n";
     int fd = fds[i].fd;
     close(fd);
     clientIPs.erase(fd);
@@ -732,7 +731,7 @@ void server::disconnecting(size_t &i)
             removeUser(users[getUserBySocket(fd)]);
         }
     }
-    catch (server::serverException &e)
+    catch (std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
     }

@@ -119,10 +119,6 @@ std::map<std::string, std::string> parseChannels(std::string channels, std::stri
         }
         chans[chansVec[i]] = keysVec[i];
     }
-    // for (size_t i = 0; i < chansVec.size(); i++)
-    // {
-    //     std::cerr << "channel :" << channels[i] << " key : " << keysVec[i] << std::endl;
-    // }
     return chans;
 }
 
