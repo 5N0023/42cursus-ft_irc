@@ -31,7 +31,7 @@
 #define RPL_INVITE(nick, username, clienthostname, invited, channel) ":" + nick + "!" + username + "@" + clienthostname + " INVITE " + invited + " :" + channel + "\r\n"
 #define ERR_NOTONCHANNEL(hostname, channel) ":" + hostname + " 442 " + channel + " " + ":You're not on that channel\r\n"
 #define ERR_NOSUCHNICK(hostname, nick) ":" + hostname + " 401 " + nick +" :No such nick\r\n"
-#define ERR_NOSUCHCHANNEL(hostname, channel,nick) ":" + hostname + " 403 " + nick + channel + " " + ":No such channel\r\n"// 
+#define ERR_NOSUCHCHANNEL(hostname, channel,nick) ":" + hostname + " 403 " + nick + channel + " " + ":No such channel\r\n"
 #define ERR_CANNOTSENDTOCHAN(hostname, channel) ":" + hostname + " 404 " + channel + " :Cannot send to channel\r\n"
 #define ERR_USERONCHANNEL(hostname, channel, nick) ":" + hostname + " 443 " + nick + " " + channel + "  :is already on channel\r\n"
 

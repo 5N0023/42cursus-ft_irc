@@ -44,7 +44,7 @@ void server::Invite(size_t i, std::string sBuffer, std::vector<struct pollfd> fd
             }
         }
         if (it == channels.size())
-            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[2], users[User].getNick())); // khesni ne3raf channel li jani mena msg
+            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[2], users[User].getNick()));
     }
     catch (channel::channelException &e)
     {

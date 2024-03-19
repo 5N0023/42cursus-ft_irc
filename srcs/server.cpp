@@ -255,7 +255,6 @@ void server::addChannel(std::string ChannelName, user user, std::string key)
             }
             std::string reply = RPL_NAMREPLY(serverIP, users, ChannelName, user.getNick());
             send(user.getSocket(), reply.c_str(), reply.size(), 0);
-            // TOPIC reply
             if (channels[i].getHasTopic())
             {
                 reply = RPL_TOPICDISPLAY(serverIP, user.getNick(), ChannelName, channels[i].getTopic());

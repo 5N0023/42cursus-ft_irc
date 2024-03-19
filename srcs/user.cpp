@@ -104,7 +104,6 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
         {
             std::string reply = ERR_NICKNAMEINUSE(nick, serverIP);
             send(this->getSocket(), reply.c_str(), reply.size(), 0);
-            // throw userException("Nick already in use");
         }
     }
     if (this->nick == "")

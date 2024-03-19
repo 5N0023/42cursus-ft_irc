@@ -12,13 +12,11 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
         size_t leagueEnd = jsonResponse.find("\"", leagueStart);
         match.league = jsonResponse.substr(leagueStart, leagueEnd - leagueStart);
 
-        // Ensure we move to the "homeTeam" section after "competition" to avoid capturing competition names again
         size_t homeTeamPos = jsonResponse.find("\"homeTeam\":{", leagueEnd);
         size_t homeTeamStart = jsonResponse.find("\"name\":\"", homeTeamPos) + 8;
         size_t homeTeamEnd = jsonResponse.find("\"", homeTeamStart);
         match.homeTeam = jsonResponse.substr(homeTeamStart, homeTeamEnd - homeTeamStart);
 
-        // Ensure we move to the "awayTeam" section immediately after "homeTeam" to capture the correct away team name
         size_t awayTeamPos = jsonResponse.find("\"awayTeam\":{", homeTeamEnd);
         size_t awayTeamStart = jsonResponse.find("\"name\":\"", awayTeamPos) + 8;
         size_t awayTeamEnd = jsonResponse.find("\"", awayTeamStart);
@@ -29,7 +27,7 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
         match.matchTime = jsonResponse.substr(matchTimeStart, matchTimeEnd - matchTimeStart);
 
         matches.push_back(match);
-        pos = matchTimeEnd; // Move past this match for the next iteration
+        pos = matchTimeEnd; 
         count++;
         if (count == 100)
         {
@@ -41,12 +39,10 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
 
 std::string httpRequest(const std::string &host, const std::string &path)
 {
-    int port = 80; // HTTP port
-    // token "X-Auth-Token: 7437b3fe243e4b9092b4dd01d6508400"
+    int port = 80;
     std::string request = "GET " + path + " HTTP/1.1\r\nHost: " + host + "\r\nConnection: close\r\nX-Auth-Token: 7437b3fe243e4b9092b4dd01d6508400\r\n\r\n";
     std::string response;
 
-    // Create socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
@@ -54,7 +50,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
         return "";
     }
 
-    // Get server IP
     struct hostent *server = gethostbyname(host.c_str());
     if (server == nullptr)
     {
@@ -63,7 +58,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
         return "";
     }
 
-    // Connect to server
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -77,7 +71,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
         return "";
     }
 
-    // Send request
     if (write(sockfd, request.c_str(), request.length()) < 0)
     {
         std::cerr << "ERROR writing to socket" << std::endl;
@@ -85,7 +78,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
         return "";
     }
 
-    // Receive response
     char buffer[4096];
     while (true)
     {
@@ -103,7 +95,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
     }
 
     close(sockfd);
-    // remove the headers
     size_t bodyStart = response.find("\r\n\r\n") + 4;
     response = response.substr(bodyStart);
     return response;
@@ -111,8 +102,6 @@ std::string httpRequest(const std::string &host, const std::string &path)
 
 std::vector<MatchInfo> getMatches()
 {
-    // This example won't work with HTTPS endpoints, only HTTP.
-    // system
     std::string path = "https://api.football-data.org/v4/matches";
     std::string response = httpRequest("api.football-data.org", path);
     std::cerr << response << std::endl;

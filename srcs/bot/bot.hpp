@@ -8,12 +8,11 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <fcntl.h> // For setting socket non-blocking
+#include <fcntl.h>
 #include <iostream>
 #include <string>
 #include "utils.hpp"
 
-#define CONNECTION_PORT 6697
 
 class bot
 {
@@ -33,24 +32,6 @@ public:
     ~bot();
     void connectToServer();
     void listenToServerAndRespond();
-    // void disconnectFromServer();
-    // void sendToServer(std::string message);
-    // void joinChannel(std::string channel);
-    // void partChannel(std::string channel);
-    // void privmsg(std::string receiver, std::string message);
-    // void run();
-    // void stop();
-    // class botException : public std::exception
-    // {
-    //     private:
-    //         std::string message;
-    //     public:
-    //         botException(std::string message);
-    //         const char *what(void) const throw();
-    //         ~botException() throw();
-
-    // };
-
     class botException : public std::exception
     {
     private:

@@ -21,9 +21,9 @@ private:
     bool has_topic;
     bool has_limit;
     size_t limit;
-    bool has_key;      // tr
-    bool topic_strict; // true for operator can only change the topic , false all the members can change the topic
-    bool mode;         // false for public, true for invite-only
+    bool has_key;      
+    bool topic_strict; 
+    bool mode;         
 public:
     channel(std::string name);
     ~channel();
