@@ -6,7 +6,7 @@
 /*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 13:40:32 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/17 13:47:54 by hznagui          ###   ########.fr       */
+/*   Updated: 2024/03/19 14:10:35 by hznagui          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void server::Topic(size_t i, std::string sBuffer, std::vector<struct pollfd> fds
             }
         }
         if (it == channels.size())
-            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick())); // khesni ne3raf channel li jani mena msg
+            throw channel::channelException(ERR_NOSUCHCHANNEL(serverIP, vec[1], users[User].getNick()));
     }
     catch (channel::channelException &e)
     {
