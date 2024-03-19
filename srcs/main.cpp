@@ -11,6 +11,16 @@ int main(int argc, char *argv[])
     try
     {
         std::string password = argv[2];
+        if (atoi(argv[1]) < 1024 || atoi(argv[1]) > 69698)
+        {
+            std::cerr << "Port number must be greater than 1024 and less than 69699\n";
+            return -1;
+        }
+        if (password.length() < 1)
+        {
+            std::cerr << "Password cannot be empty\n";
+            return -1;
+        }
         for (size_t i = 0; i < password.length(); i++)
             {
                 if (password[i] == '\n' || password[i] == ' ')

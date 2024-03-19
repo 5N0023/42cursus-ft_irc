@@ -32,6 +32,7 @@ public:
     ~bot();
     void connectToServer();
     void listenToServerAndRespond();
+
     class botException : public std::exception
     {
     private:

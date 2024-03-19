@@ -27,7 +27,7 @@ std::vector<MatchInfo> extractMatchInfo(const std::string &jsonResponse)
         match.matchTime = jsonResponse.substr(matchTimeStart, matchTimeEnd - matchTimeStart);
 
         matches.push_back(match);
-        pos = matchTimeEnd; 
+        pos = matchTimeEnd;
         count++;
         if (count == 100)
         {
