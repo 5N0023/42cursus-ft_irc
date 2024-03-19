@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   user.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:39 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:39 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "user.hpp"
 
 user::user(std::string ipAddress, int socket)
@@ -116,7 +104,6 @@ void user::setNick(std::string nick, std::vector<user> users, std::string server
         {
             std::string reply = ERR_NICKNAMEINUSE(nick, serverIP);
             send(this->getSocket(), reply.c_str(), reply.size(), 0);
-            // throw userException("Nick already in use");
         }
     }
     if (this->nick == "")

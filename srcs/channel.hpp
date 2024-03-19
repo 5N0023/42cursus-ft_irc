@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:27 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/09 22:18:09 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include <string>
@@ -33,9 +21,9 @@ private:
     bool has_topic;
     bool has_limit;
     size_t limit;
-    bool has_key;      // tr
-    bool topic_strict; // true for operator can only change the topic , false all the members can change the topic
-    bool mode;         // false for public, true for invite-only
+    bool has_key;      
+    bool topic_strict; 
+    bool mode;         
 public:
     channel(std::string name);
     ~channel();

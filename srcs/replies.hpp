@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   replies.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:32 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/07 14:57:08 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #define RPL_WELCOME(nick, hostname) ":" + hostname + " 001 " + nick + " :Welcome " + nick + " to the ft_irc server !\r\n"
 #define RPL_YOURHOST(nick, hostname) ":" + hostname + " 002 " + nick + " :Your host is " + hostname + " running version 0.0.0.1 !\r\n"
 #define RPL_CREATED(nick, hostname) ":" + hostname + " 003 " + nick + " :This server was created by mlektaib && hznagui!\r\n"
@@ -43,7 +31,7 @@
 #define RPL_INVITE(nick, username, clienthostname, invited, channel) ":" + nick + "!" + username + "@" + clienthostname + " INVITE " + invited + " :" + channel + "\r\n"
 #define ERR_NOTONCHANNEL(hostname, channel) ":" + hostname + " 442 " + channel + " " + ":You're not on that channel\r\n"
 #define ERR_NOSUCHNICK(hostname, nick) ":" + hostname + " 401 " + nick +" :No such nick\r\n"
-#define ERR_NOSUCHCHANNEL(hostname, channel,nick) ":" + hostname + " 403 " + nick + channel + " " + ":No such channel\r\n"// 
+#define ERR_NOSUCHCHANNEL(hostname, channel,nick) ":" + hostname + " 403 " + nick + channel + " " + ":No such channel\r\n"
 #define ERR_CANNOTSENDTOCHAN(hostname, channel) ":" + hostname + " 404 " + channel + " :Cannot send to channel\r\n"
 #define ERR_USERONCHANNEL(hostname, channel, nick) ":" + hostname + " 443 " + nick + " " + channel + "  :is already on channel\r\n"
 

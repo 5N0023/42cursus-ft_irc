@@ -1,17 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   utils.cpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:44 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/17 13:59:14 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "utils.hpp"
-
+#include "server.hpp"
 size_t ToSize_T(std::string &str)
 {
     std::istringstream iss(str);
@@ -142,11 +130,7 @@ std::string getLocalIP()
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1)
-    {
-        std::cerr << "Could not create socket.\n";
-        return localIP;
-    }
-
+        throw server::serverException("Socket creation failed");
     struct sockaddr_in serv;
     memset(&serv, 0, sizeof(serv));
     serv.sin_family = AF_INET;
@@ -155,17 +139,14 @@ std::string getLocalIP()
 
     if (connect(sock, (const struct sockaddr *)&serv, sizeof(serv)) == -1)
     {
-        std::cerr << "Connect failed.\n";
+        throw server::serverException("Connection failed");
     }
     else
     {
-        // Get the local IP address
         struct sockaddr_in name;
         socklen_t namelen = sizeof(name);
         if (getsockname(sock, (struct sockaddr *)&name, &namelen) == -1)
-        {
-            std::cerr << "getsockname failed.\n";
-        }
+            throw server::serverException("getsockname failed");
         else
         {
             char buffer[INET_ADDRSTRLEN];
@@ -174,9 +155,7 @@ std::string getLocalIP()
                 localIP = std::string(buffer);
             }
             else
-            {
-                std::cerr << "inet_ntop failed.\n";
-            }
+                throw server::serverException("inet_ntop failed");
         }
     }
 

@@ -1,20 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   user.hpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:42 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:42 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 #include <string>
 #include <iostream>
 #include <vector>
-#include <unistd.h> // for close()
+#include <unistd.h>
 #include <poll.h>
 #include <exception>
 #include "channel.hpp"
@@ -45,15 +33,10 @@ public:
     bool getNickGiven();
     bool getPasswordCorrect();
     void setPassConfirmed(bool pass);
-    // void setIpAddress(std::string ipAddress);
-    // void setSocket(int socket);
     std::string getUserName();
     std::string getNick();
     std::string getIpAddress();
-    // void changeNick(std::string newNick, std::vector<user> users);
     int getSocket();
-    // void sendPrivateMessage(std::string message, user recipient);
-    // void sendChannelMessage(std::string message, channel channel);
     class userException : public std::exception
     {
     private:

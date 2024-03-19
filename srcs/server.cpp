@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:11 by hznagui           #+#    #+#             */
-/*   Updated: 2024/03/17 14:03:59 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "server.hpp"
 
 server::server(int Port, std::string password) : password(password)
@@ -267,7 +255,6 @@ void server::addChannel(std::string ChannelName, user user, std::string key)
             }
             std::string reply = RPL_NAMREPLY(serverIP, users, ChannelName, user.getNick());
             send(user.getSocket(), reply.c_str(), reply.size(), 0);
-            // TOPIC reply
             if (channels[i].getHasTopic())
             {
                 reply = RPL_TOPICDISPLAY(serverIP, user.getNick(), ChannelName, channels[i].getTopic());

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   bot.cpp                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hznagui <hznagui@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/20 11:08:55 by hznagui           #+#    #+#             */
-/*   Updated: 2024/02/20 11:08:55 by hznagui          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "bot.hpp"
 
 bot::bot(std::string server, int serverPort, std::string nick, std::string user, std::string realname, std::string serverPassword)
@@ -37,7 +25,7 @@ void bot::connectToServer()
 
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(CONNECTION_PORT);
+    server_address.sin_port = htons(serverPort);
 
     if (inet_pton(AF_INET, server.c_str(), &server_address.sin_addr) <= 0)
     {
@@ -56,7 +44,6 @@ void bot::connectToServer()
     usleep(500);
     send(socket, "USER bot 0 * bot\r\n", strlen("USER bot 0 * bot\r\n"), 0);
     usleep(500);
-    // receive welcome message
     char receive_buffer[1024];
     int valread = recv(socket, receive_buffer, 1024, 0);
     std::string message = receive_buffer;
